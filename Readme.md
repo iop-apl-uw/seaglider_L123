@@ -2,7 +2,7 @@
 
 Software for processing 
 [Seaglider](https://iop.apl.washington.edu/seaglider.php) output data into level one, two and three 
-data products.  For a description of the levels and processing see the document ```???```.
+data products.  For a description of the levels and processing see the document See [Seaglider_data_L123.pdf](Seaglider_data_L123.pdf?raw=true) in the docs directory for further details.
 This software is developed at the University of Washington,
 maintained and supported by the [IOP group at APL-UW](https://iop.apl.washington.edu/index.php).
 
@@ -28,7 +28,7 @@ duplicating this file and adding the needed entries - documentation on how to do
 - ```mission_meta.yml``` is and example file, intended to be duplicated and tailored to the particular
 mission being processed.  The top section - ```processing_config``` - contains parameters to the processing.
 The default values are generally good for most seaglider data, but can be adjusted to fit your needs.  
-A description of these can be found in ```???```.  The section ```global_attributes``` are copied directly 
+A description of these can be found in [Seaglider_data_L123.pdf](Seaglider_data_L123.pdf?raw=true).  The section ```global_attributes``` are copied directly 
 into the global attributes in the output netcdf files.  See the attributes preceeded by ```#Update``` for 
 attributes to be edited for your dataset.
 
