@@ -1,0 +1,1442 @@
+
+# Variable metadata
+#
+varmeta:
+  ctd_time:
+    qc_name: null
+    time_name: ctd_time
+    truck_time_name: null
+    depth_name: ctd_depth
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_L1_dimensions: ['obs_CTD']
+    nc_varname: time
+    nc_attribs:
+      FillValue: -999
+      l1: time for every sample point
+      l2: time for every sample point
+      l3: time for every sample point, interpolated
+      units: seconds since 1970-1-1T00:00:00Z
+      standard_name: time
+      long_name: CTD time
+      coverage_content_type: physicalMeasurement
+      axis: T
+    nc_type: d
+    decimal_pts: 0
+  ctd_depth:
+    qc_name: null
+    time_name: ctd_time
+    truck_time_name: null
+    depth_name: ctd_depth
+    despike: false
+    nc_L1_dimensions: ['obs_CTD']
+    nc_varname: z
+    nc_attribs:
+      FillValue: null
+      description: depth
+      standard_name: depth
+      long_name: CTD Depth
+      units: m
+      coverage_content_type: coordinate
+      axis: Z
+    nc_type: f
+    decimal_pts: 2
+  ctd_time_np:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: N_time
+    include_in_L3: false
+    nc_attribs:
+      FillValue: null
+      description: number of observations in the bin
+      coverage_content_type: auxiliaryInformation
+      units: null
+      long_name: null
+    nc_type: s
+    decimal_pts: 0
+  salinity:
+    qc_name: salinity_qc
+    time_name: ctd_time
+    truck_time_name: null
+    depth_name: ctd_depth
+    despike: true
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_L1_dimensions: ['obs_CTD']
+    nc_varname: S
+    nc_attribs:
+      FillValue: -999
+      instrument: inst_ctd
+      l1: corrected salinity
+      l2: corrected salinity
+      l3: corrected salinity, with outliers removed, interpolated over gaps < {max_depth_gap}m
+      units: "1"
+      standard_name: sea_water_practical_salinity
+      long_name: CTD salinity
+      coverage_content_type: physicalMeasurement
+      coordinates : "time lat lon z"
+      valid_min: 0.0
+      valid_max: 40.0
+    nc_type: f
+    decimal_pts: 3
+  salinity_np:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: N_S
+    include_in_L3: false
+    nc_attribs:
+      FillValue: -999
+      description: number of observations in the bin
+      coverage_content_type: auxiliaryInformation
+      units: null
+      long_name: null
+    nc_type: s
+    decimal_pts: 0
+  salinity_ref:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: S_ref
+    nc_attribs:
+      FillValue: -999
+      l3: low-pass filtered salinity, {despike_running_mean_dx:0.1f} days and {despike_running_mean_dy:0.1f} m
+      units: PSU
+      long_name: null
+      coverage_content_type: qualityInformation
+    nc_type: f
+    decimal_pts: 3
+  salinity_rms_ref:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: S_rms_ref
+    nc_attribs:
+      FillValue: -999
+      l3: rms of salinity within smoothing window (high-freq variance). Despiker removes data more than {despike_deviations_for_mean:0.1f} deviations for mean
+      units: PSU
+      coverage_content_type: qualityInformation
+      long_name: null
+    nc_type: f
+    decimal_pts: 3
+  salinity_flags:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: S_flags
+    nc_attribs:
+      FillValue: -127
+      description: "qc flag for salinity: 0 no data (interpolated), 1 outside despiker, 2 is good"
+      coverage_content_type: qualityInformation
+      units: null
+      long_name: null
+    nc_type: b
+    decimal_pts: 0
+  salinity_L2:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_L1_dimensions: ['obs_CTD']
+    nc_varname: S_L2
+    nc_attribs:
+      FillValue: -999
+      l3: level 2 salinity (no despiker, not interpolated), with basestation processing (qc_good)
+      units: PSU
+      long_name: CTD salinity
+      coverage_content_type: physicalMeasurement
+    nc_type: f
+    decimal_pts: 3
+  temperature:
+    qc_name: temperature_qc
+    time_name: ctd_time
+    truck_time_name: null
+    depth_name: ctd_depth
+    despike: true
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_L1_dimensions: ['obs_CTD']
+    nc_varname: T
+    nc_attribs:
+      FillValue: -999
+      instrument: inst_ctd      
+      l1: corrected in-situ temperature
+      l2: corrected in-situ temperature
+      l3: corrected in-situ temperature, with outliers removed, interpolated over gaps < {max_depth_gap}m
+      units: degrees_C
+      standard_name: sea_water_temperature
+      long_name: CTD temperature
+      coverage_content_type: physicalMeasurement
+      coordinates: "time lat lon z"
+      valid_min: -2.6
+      valid_max: 40.0
+    nc_type: f
+    decimal_pts: 3
+  temperature_np:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: N_T
+    include_in_L3: false    
+    nc_attribs:
+      FillValue: -999
+      description: number of observations in the bin
+      coverage_content_type: auxiliaryInformation
+      units: null
+      long_name: null
+    nc_type: s
+    decimal_pts: 0
+  temperature_ref:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: T_ref
+    nc_attribs:
+      FillValue: -999
+      l3: low-pass filtered temperature, {despike_running_mean_dx:0.1f} days and {despike_running_mean_dy:0.1f} m
+      units: degrees_Celsius
+      coverage_content_type: qualityInformation
+      long_name: null
+    nc_type: f
+    decimal_pts: 3
+  temperature_rms_ref:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: T_rms_ref
+    nc_attribs:
+      FillValue: -999
+      l3: rms of temperature within smoothing window (high-freq variance). Despiker removes data more than {despike_deviations_for_mean:0.1f} deviations for mean [deg C]
+      units: degrees_Celsius
+      coverage_content_type: qualityInformation
+      long_name: null
+    nc_type: f
+    decimal_pts: 3
+  temperature_flags:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: T_flags
+    nc_attribs:
+      FillValue: -127
+      description: "qc flag for temperature: 0 no data (interpolated), 1 outside despiker, 2 is good"
+      coverage_content_type: qualityInformation
+      units: null
+      long_name: null
+    nc_type: b
+    decimal_pts: 0
+  temperature_L2:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: T_L2
+    nc_attribs:
+      FillValue: -999
+      l3: level 2 temperature (no despiker, not interpolated), with basestation processing (qc_good)
+      units: degrees_Celsius
+      long_name: CTD temperature
+      coverage_content_type: physicalMeasurement
+    nc_type: f
+    decimal_pts: 3
+  speed:
+    qc_name: speed_qc
+    time_name: ctd_time
+    truck_time_name: null
+    depth_name: ctd_depth
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    #nc_L1_dimensions: ['obs_CTD']
+    nc_varname: speed
+    nc_attribs:
+      FillValue: -999
+      description: forward speed of the glider through the water from the flight model
+      units: m s-1
+      long_name: null
+      coverage_content_type: modelResult
+    nc_type: f
+    decimal_pts: 3
+  latitude:
+    qc_name: null
+    time_name: ctd_time
+    truck_time_name: null
+    depth_name: ctd_depth
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_L1_dimensions: ['obs_CTD']
+    nc_varname: lat
+    include_in_L3: false
+    nc_attribs:
+      FillValue: null
+      description: latitude of every sample point, from the flight model when underwater
+      standard_name: latitude
+      long_name: estimated latitude
+      units: degrees_north
+      coverage_content_type: coordinate
+      axis: Y
+      valid_min: -90.0
+      valid_max: 90.0
+    nc_type: f
+    decimal_pts: 4
+  longitude:
+    qc_name: null
+    time_name: ctd_time
+    truck_time_name: null
+    depth_name: ctd_depth
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_L1_dimensions: ['obs_CTD']
+    nc_varname: lon
+    include_in_L3: false
+    nc_attribs:
+      FillValue: null
+      description: longitude of every sample point, from the flight model when underwater
+      units: degrees_east
+      standard_name: longitude
+      long_name: estimate longitude
+      coverage_content_type: coordinate
+      axis: X
+      valid_min: -180.0
+      valid_max: 180.0
+    nc_type: f
+    decimal_pts: 4
+  z:
+    despike: false
+    nc_dimensions: ['z_data_point']
+    nc_varname: z
+    nc_attribs:
+      FillValue: null
+      description: depth
+      standard_name: depth
+      long_name: depth of bin
+      units: m
+      coverage_content_type: coordinate
+      axis: Z
+    nc_type: f
+    decimal_pts: 2
+  dive_num:
+    despike: false
+    nc_dimensions: ['half_profile_data_point']
+    nc_varname: dive
+    nc_attribs:
+      FillValue: null
+      description: Dive number for observations
+      cf_role: trajectory_id
+      coverage_content_type: referenceInformation
+      units: null
+      long_name: Dive identifier
+    nc_type: s
+    decimal_pts: 0
+  dive_num_single:
+    despike: false
+    nc_L1_dimensions: ['profile']
+    include_in_L23: false
+    nc_varname: dive
+    nc_attribs:
+      FillValue: null
+      description: Dive number for observations
+      cf_role: trajectory_id
+      coverage_content_type: referenceInformation
+      long_name: Dive identifier
+      units: null
+    nc_type: s
+    decimal_pts: 0
+  P:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: P
+    nc_attribs:
+      FillValue: -999
+      l3: pressure
+      units: dBar
+      coverage_content_type: physicalMeasurement
+      standard_name: sea_water_pressure
+      long_name: sea_water_pressure
+    nc_type: f
+    decimal_pts: 3
+  SA:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: SA
+    nc_attribs:
+      FillValue: -999
+      l3: Absolute salinity
+      units: g/kg
+      coverage_content_type: physicalMeasurement
+      standard_name: sea_water_absolute_salinity
+      long_name: sea_water_absolute_salinity
+    nc_type: f
+    decimal_pts: 3
+  CT:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: CT
+    nc_attribs:
+      FillValue: -999
+      l3: Conservative Temperature (ITS-90)
+      units: degrees Celsius
+      coverage_content_type: physicalMeasurement
+      standard_name: sea_water_conservative_temperature
+      long_name: sea_water_conservative_temperature
+    nc_type: f
+    decimal_pts: 3
+  PD:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: PD
+    nc_attribs:
+      FillValue: -999
+      l3: Potential density
+      units: kg/m3
+      coverage_content_type: physicalMeasurement
+      standard_name: sea_water_potential_density
+      long_name: sea_water_potential_density
+    nc_type: f
+    decimal_pts: 3
+  depth_avg_curr_east:
+    qc_name: null
+    time_name: null
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_dimensions: ['profile']
+    nc_varname: u_dive
+    nc_attribs:
+      FillValue: -999
+      description: depth-average current in the east direction from the flight model
+      units: m s-1
+      coverage_content_type: modelResult
+      standard_name: sea_water_speed
+      long_name: depth-average current in the east direction
+      valid_min: -2.0
+      valid_max: 2.0
+      coordinates: "dive"
+    nc_type: f
+    decimal_pts: 3
+  depth_avg_curr_north:
+    qc_name: null
+    time_name: null
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_dimensions: ['profile']
+    nc_varname: v_dive
+    nc_attribs:
+      FillValue: -999
+      description: depth-average current in the north direction from the flight model
+      units: m s-1
+      coverage_content_type: modelResult
+      standard_name: sea_water_speed
+      long_name: depth-average current in the north direction
+      valid_min: -2.0
+      valid_max: 2.0
+      coordinates: "dive"
+    nc_type: f
+    decimal_pts: 3
+  surface_curr_east:
+    qc_name: null
+    time_name: null
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_dimensions: ['profile']
+    nc_varname: surface_curr_east
+    nc_attribs:
+      FillValue: -999
+      description: surface current in the east direction from the gps track
+      units: m s-1
+      coverage_content_type: physicalMeasurement
+      #standard_name: sea_water_speed
+      standard_name: eastward_sea_water_velocity
+      long_name: surface current in the east direction, measured at the start of the dive
+      valid_min: -2.0
+      valid_max: 2.0
+      coordinates: "dive"
+    nc_type: f
+    decimal_pts: 3
+  surface_curr_north:
+    qc_name: null
+    time_name: null
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_dimensions: ['profile']
+    nc_varname: surface_curr_north
+    nc_attribs:
+      FillValue: -999
+      description: surface current in the north direction from gps track
+      units: m s-1
+      coverage_content_type: physicalMeasurement
+      #standard_name: sea_water_speed
+      standard_name: northward_sea_water_velocity
+      long_name: surface current in the north direction, measured at the start of the dive
+      valid_min: -2.0
+      valid_max: 2.0
+      coordinates: "dive"
+    nc_type: f
+    decimal_pts: 3
+  time_gps:
+    qc_name: null
+    time_name: null
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_dimensions: ['half_profile_data_point']
+    nc_varname: time_gps
+    nc_attribs:
+      FillValue: null
+      description: Time of the GPS fix at start/end of the dive
+      units: seconds since 1970-1-1T00:00:00Z
+      standard_name: time
+      long_name: Time of the GPS fix at start/end of the dive
+      coverage_content_type: coordinate
+    nc_type: f
+    decimal_pts: 4
+  lat_gps:
+    qc_name: null
+    time_name: null
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_dimensions: ['half_profile_data_point']
+    nc_varname: lat_gps
+    nc_attribs:
+      FillValue: null
+      description: Latitude from GPS fix at start/end of the dive
+      units: degrees_north
+      coverage_content_type: coordinate
+      long_name: Latitude from GPS fix at start/end of the dive
+    nc_type: f
+    decimal_pts: 4
+  lon_gps:
+    qc_name: null
+    time_name: null
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_dimensions: ['half_profile_data_point']
+    nc_varname: lon_gps
+    nc_attribs:
+      FillValue: null
+      description: Longitude from GPS fix at start/end of the dive
+      units: degrees_east
+      long_name: Longitude from GPS fix at start/end of the dive
+      coverage_content_type: coordinate
+    nc_type: f
+    decimal_pts: 4
+  time_profile:
+    qc_name: null
+    time_name: null
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_dimensions: ['half_profile_data_point']
+    nc_varname: time_profile
+    nc_attribs:
+      FillValue: null
+      description: Time of the 1/4 or 3/4 position between the starting and ending GPS position
+      units: seconds since 1970-1-1T00:00:00Z
+      standard_name: time
+      long_name: profile time
+      coverage_content_type: coordinate
+    nc_type: f
+    decimal_pts: 4
+  lat_profile:
+    qc_name: null
+    time_name: null
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_dimensions: ['half_profile_data_point']
+    nc_varname: lat_profile
+    nc_attribs:
+      FillValue: null
+      description: Latitude for the 1/4 or 3/4 position between the starting and ending GPS position
+      units: degrees_north
+      coverage_content_type: coordinate
+      long_name: Latitude for the 1/4 or 3/4 position between the starting and ending GPS position
+    nc_type: f
+    decimal_pts: 4
+  lon_profile:
+    qc_name: null
+    time_name: null
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_dimensions: ['half_profile_data_point']
+    nc_varname: lon_profile
+    nc_attribs:
+      FillValue: null
+      description: Longitude for the 1/4 or 3/4 position between the starting and ending GPS position
+      units: degrees_east
+      coverage_content_type: coordinate
+      long_name: Longitude for the 1/4 or 3/4 position between the starting and ending GPS position
+    nc_type: f
+    decimal_pts: 4
+  time_dive:
+    qc_name: null
+    time_name: null
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_dimensions: ['profile']
+    nc_varname: time_dive
+    nc_attribs:
+      FillValue: null
+      description: average time for the dive
+      units: seconds since 1970-1-1T00:00:00Z
+      standard_name: time
+      long_name: time of dive
+      coverage_content_type: coordinate
+      axis: T
+    nc_type: f
+    decimal_pts: 4
+  lat_dive:
+    qc_name: null
+    time_name: null
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_dimensions: ['profile']
+    nc_varname: lat_dive
+    nc_attribs:
+      FillValue: null
+      description: average latitude of the dive
+      units: degrees_north
+      coverage_content_type: coordinate
+      standard_name: latitude
+      long_name: average latitude of the dive
+      axis: Y
+    nc_type: f
+    decimal_pts: 4
+  lon_dive:
+    qc_name: null
+    time_name: null
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_dimensions: ['profile']
+    nc_varname: lon_dive
+    nc_attribs:
+      FillValue: null
+      description: average longitude of the dive
+      units: degrees_east
+      coverage_content_type: coordinate
+      axis: X
+      standard_name: longitude
+      long_name: average longitude of the dive
+    nc_type: f
+    decimal_pts: 3
+  ocr504i_chan1:
+    qc_name: null
+    time_name: ocr504i_time
+    truck_time_name: time
+    depth_name: null
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_L1_dimensions: ['obs_ocr504i']
+    nc_varname: ocr504i_chan1
+    nc_attribs:
+      FillValue: -999
+      description: 412nm
+      long_name: 412nm
+      units: uW/cm^2/nm
+      coverage_content_type: physicalMeasurement
+    nc_type: f
+    decimal_pts: 3
+  ocr504i_chan2:
+    qc_name: null
+    time_name: ocr504i_time
+    truck_time_name: time
+    depth_name: null
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_L1_dimensions: ['obs_ocr504i']
+    nc_varname: ocr504i_chan2
+    nc_attribs:
+      FillValue: -999
+      description: 444nm
+      long_name: 444nm      
+      units: uW/cm^2/nm
+      coverage_content_type: physicalMeasurement
+    nc_type: f
+    decimal_pts: 3
+  ocr504i_chan3:
+    qc_name: null
+    time_name: ocr504i_time
+    truck_time_name: time
+    depth_name: null
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_L1_dimensions: ['obs_ocr504i']
+    nc_varname: ocr504i_chan3
+    nc_attribs:
+      FillValue: -999
+      description: 554nm
+      long_name: 554nm
+      units: uW/cm^2/nm
+      coverage_content_type: physicalMeasurement
+    nc_type: f
+    decimal_pts: 3
+  ocr504i_chan4:
+    qc_name: null
+    time_name: ocr504i_time
+    truck_time_name: time
+    depth_name: null
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_L1_dimensions: ['obs_ocr504i']
+    nc_varname: ocr504i_chan4
+    nc_attribs:
+      FillValue: -999
+      description: PAR
+      long_name: PAR
+      units: umol/m^2/sec
+      coverage_content_type: physicalMeasurement
+    nc_type: f
+    decimal_pts: 3
+  sbe43_dissolved_oxygen:
+    qc_name: sbe43_dissolved_oxygen_qc
+    time_name: sbe43_time
+    truck_time_name: time
+    depth_name: null
+    despike: true
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_L1_dimensions: ['obs_sbe43']
+    nc_varname: dissolved_oxygen
+    nc_attribs:
+      FillValue: -999
+      l2: Dissolved oxygen
+      l3: Dissolved oxygen with outliers removed, interpolated over gaps < {max_depth_gap}m
+      units: micromoles/kg
+      long_name: Dissolved oxygen
+      coverage_content_type: physicalMeasurement
+    nc_type: f
+    decimal_pts: 3
+  sbe43_dissolved_oxygen_ref:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_L1_dimensions: ['obs_sbe43']
+    nc_varname: dissolved_oxygen_ref
+    nc_attribs:
+      FillValue: -999
+      l3: low-pass filtered sbe43 dissolved oxygen, {despike_running_mean_dx:0.1f} days and {despike_running_mean_dy:0.1f} m
+      units: micromoles/kg
+      long_name: null
+      coverage_content_type: qualityInformation
+    nc_type: f
+    decimal_pts: 3
+  sbe43_dissolved_oxygen_rms_ref:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: dissolved_oxygen_rms_ref
+    nc_attribs:
+      FillValue: -999
+      l3: rms of dissolved oxygen within smoothing window (high-freq variance). Despiker removes data more than {despike_deviations_for_mean:0.1f} deviations for mean
+      units: micromoles/kg
+      long_name: null
+      coverage_content_type: qualityInformation
+    nc_type: f
+    decimal_pts: 3
+  sbe43_dissolved_oxygen_flags:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: dissolved_oxygen_flags
+    nc_attribs:
+      FillValue: -127
+      l3: "qc flag for dissolved oxygen: 0 no data (interpolated), 1 outside despiker, 2 is good"
+      units: null
+      long_name: null
+      coverage_content_type: qualityInformation
+    nc_type: b
+    decimal_pts: 0
+  sbe43_dissolved_oxygen_L2:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: dissolved_oxygen_L2
+    nc_attribs:
+      FillValue: -999
+      l3: level 2 dissolved oxygen (no despiker, not interpolated), with basestation processing (qc_good)
+      units: micromoles/kg
+      coverage_content_type: physicalMeasurement
+      long_name: dissolved oxygen
+    nc_type: f
+    decimal_pts: 3
+  FL_baseline:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: FL_baseline
+    nc_attribs:
+      FillValue: -999
+      l3: interpolated over gaps < {max_depth_gap}m
+      units: micrograms/liter
+      coverage_content_type: physicalMeasurement
+      long_name: null
+    nc_type: f
+    decimal_pts: null
+  FL_counts:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: FL_counts
+    nc_attribs:
+      FillValue: -999
+      l3: interpolated over gaps < {max_depth_gap}m
+      coverage_content_type: physicalMeasurement
+      units: null
+      long_name: null
+    nc_type: s
+    decimal_pts: 0
+  baseline_470nm:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: baseline_470nm
+    nc_attribs:
+      FillValue: -999
+      l2: baseline signal after removing seawater as computed using the method of Briggs et al., DSRI, 2011
+      l3: baseline signal after removing seawater as computed using the method of Briggs et al., DSRI, 2011, interpolated over gaps < {max_depth_gap}m
+      units: m^-1 sr^-1
+      coverage_content_type: physicalMeasurement
+      long_name: null
+    nc_type: f
+    decimal_pts: null
+  baseline_700nm:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: baseline_700nm
+    nc_attribs:
+      FillValue: -999
+      l2: baseline signal after removing seawater as computed using the method of Briggs et al., DSRI, 2011
+      l3: baseline signal after removing seawater as computed using the method of Briggs et al., DSRI, 2011, interpolated over gaps < {max_depth_gap}m
+      units: micrograms/liter
+      coverage_content_type: physicalMeasurement
+      long_name: null
+    nc_type: f
+    decimal_pts: null
+  aanderaa4831_dissolved_oxygen:
+    qc_name: aanderaa4831_dissolved_oxygen_qc
+    time_name: aa4831_time
+    truck_time_name: time
+    depth_name: null
+    despike: true
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_L1_dimensions: ['obs_aa4831']
+    nc_varname: dissolved_oxygen
+    nc_attribs:
+      FillValue: -999
+      instrument: inst_aa4831
+      l1: Dissolved oxygen recalculated from phase with salinity and pressure corrections      
+      l2: Dissolved oxygen recalculated from phase with salinity and pressure corrections
+      l3: Dissolved oxygen recalculated from phase with salinity and pressure corrections interpolated over gaps < {max_depth_gap}m [micromoles/kg]
+      #units: micromoles/kg
+      #standard_name: "NONE"
+      standard_name: mole_concentration_of_dissolved_molecular_oxygen_in_sea_water
+      long_name: Dissolved oxygen recalculated from phase with salinity and pressure corrections
+      units: umol kg-1
+      coverage_content_type: physicalMeasurement
+      coordinates: "aa4831_time"
+    nc_type: f
+    decimal_pts: 3
+  aanderaa4831_dissolved_oxygen_np:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: N_disssolved_oxygen
+    include_in_L3: false    
+    nc_attribs:
+      FillValue: -999
+      instrument: inst_aa4831
+      description: number of observations in the bin
+      coverage_content_type: auxiliaryInformation
+      units: null
+      long_name: null
+    nc_type: s
+    decimal_pts: 0
+  aanderaa4831_dissolved_oxygen_L2:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: aanderaa4831_dissolved_oxygen_L2
+    nc_attribs:
+      FillValue: -999
+      l3: level 2 disolved_oxygen (no despiker, not interpolated), recalculated from phase with salinity and pressure corrections
+      units: micromoles/kg
+      coverage_content_type: physicalMeasurement
+      long_name: dissolved oxygen
+    nc_type: f
+    decimal_pts: 3
+  aanderaa4831_dissolved_oxygen_ref:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: dissolved_oxygen_ref
+    nc_attribs:
+      FillValue: -999
+      l3: low-pass filtered dissolved_oxygen, {despike_running_mean_dx:0.1f} days and {despike_running_mean_dy:0.1f} m
+      units: micromoles/kg
+      long_name: null
+      coverage_content_type: qualityInformation
+    nc_type: f
+    decimal_pts: 3
+  aanderaa4831_dissolved_oxygen_rms_ref:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: dissolved_oxygen_rms_ref
+    nc_attribs:
+      FillValue: -999
+      l3: rms of dissolved_oxygen within smoothing window (high-freq variance). Despiker removes data more than {despike_deviations_for_mean:0.1f} deviations for mean
+      units: micromoles/kg
+      long_name: null
+      coverage_content_type: qualityInformation
+    nc_type: f
+    decimal_pts: 3
+  aanderaa4831_dissolved_oxygen_flags:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: dissolved_oxygen_flags
+    nc_attribs:
+      FillValue: -127
+      description: "qc flag for dissolved oxygen: 0 no data (interpolated), 1 outside despiker, 2 is good"
+      units: null
+      long_name: null
+      coverage_content_type: qualityInformation      
+    nc_type: b
+    decimal_pts: 0
+  aanderaa4330_dissolved_oxygen:
+    qc_name: aanderaa4330_dissolved_oxygen_qc
+    time_name: aa4330_time
+    truck_time_name: time
+    depth_name: null
+    despike: true
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_L1_dimensions: ['obs_aa4330']
+    nc_varname: dissolved_oxygen
+    nc_attribs:
+      FillValue: -999
+      l2: Dissolved oxygen recalculated from phase with salinity and pressure corrections
+      l3: Dissolved oxygen recalculated from phase with salinity and pressure corrections interpolated over gaps < {max_depth_gap}m [micromoles/kg]
+      #units: micromoles/kg
+      units: umol kg-1
+      coverage_content_type: physicalMeasurement
+      long_name: dissolved oxygen
+      coordinates : "aa4330_time"        
+    nc_type: f
+    decimal_pts: 3
+  aanderaa4330_dissolved_oxygen_np:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: N_disssolved_oxygen
+    include_in_L3: false    
+    nc_attribs:
+      FillValue: -999
+      description: number of observations in the bin
+      coverage_content_type: auxiliaryInformation
+      units: null
+      long_name: null
+    nc_type: s
+    decimal_pts: 0
+  aanderaa4330_dissolved_oxygen_L2:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: aanderaa4330_dissolved_oxygen_L2
+    nc_attribs:
+      FillValue: -999
+      l3: level 2 disolved_oxygen (no despiker, not interpolated), recalculated from phase with salinity and pressure corrections
+      units: micromoles/kg
+      coverage_content_type: physicalMeasurement
+      long_name: dissolved oxygen
+    nc_type: f
+    decimal_pts: 3
+  aanderaa4330_dissolved_oxygen_ref:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: dissolved_oxygen_ref
+    nc_attribs:
+      FillValue: -999
+      l3: low-pass filtered dissolved_oxygen, {despike_running_mean_dx:0.1f} days and {despike_running_mean_dy:0.1f} m
+      units: micromoles/kg
+      long_name: null
+      coverage_content_type: qualityInformation            
+    nc_type: f
+    decimal_pts: 3
+  aanderaa4330_dissolved_oxygen_rms_ref:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: dissolved_oxygen_rms_ref
+    nc_attribs:
+      FillValue: -999
+      l3: rms of dissolved_oxygen within smoothing window (high-freq variance). Despiker removes data more than {despike_deviations_for_mean:0.1f} deviations for mean
+      units: micromoles/kg
+      long_name: null
+      coverage_content_type: qualityInformation      
+    nc_type: f
+    decimal_pts: 3
+  aanderaa4330_dissolved_oxygen_flags:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: dissolved_oxygen_flags
+    nc_attribs:
+      FillValue: -127
+      description: "qc flag for dissolved oxygen: 0 no data (interpolated), 1 outside despiker, 2 is good"
+      units: null
+      long_name: null
+      coverage_content_type: qualityInformation            
+    nc_type: b
+    decimal_pts: 0
+  wlbb2fl_sig470nm_adjusted:
+    qc_name: null
+    time_name: wlbb2fl_time
+    truck_time_name: time
+    depth_name: null
+    despike: true
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_L1_dimensions: ['obs_wlbb2fl']
+    nc_varname: wlbb2fl_sig470nm_adjusted
+    nc_attribs:
+      FillValue: -999
+      instrument: inst_wlbb2fl
+      l1: total volume blue scattering coefficient using manufacturer-supplied dark counts and scaling factor
+      l2: total volume blue scattering coefficient using manufacturer-supplied dark counts and scaling factor
+      l3: total volume blue scattering coefficient using manufacturer-supplied dark counts and scaling factor interpolated over gaps < {max_depth_gap}m
+      #units: meter^-1 steradian^-1
+      units: m-1 sr-1
+      coordinates : "wlbb2fl_time"
+      #standard_name: "NONE"
+      standard_name: volume_scattering_function_of_radiative_flux_in_sea_water
+      long_name: backscattering at 470 nm using manufacturer-supplied dark counts
+      valid_min: 0.0
+      valid_max: 0.1
+      coverage_content_type: physicalMeasurement
+    nc_type: f
+    decimal_pts: null
+  wlbb2fl_sig470nm_adjusted_np:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: N_wlbb2fl_sig470nm_adjusted
+    include_in_L3: false
+    nc_attribs:
+      FillValue: -999
+      description: number of observations in the bin
+      coverage_content_type: auxiliaryInformation
+      units: null
+      long_name: null
+    nc_type: s
+    decimal_pts: 0
+  wlbb2fl_sig470nm_adjusted_L2:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: wlbb2fl_sig470nm_adjusted_L2
+    nc_attribs:
+      FillValue: -999
+      l3: level 2 wlbb2fl_sig470nm_adjusted (no despiker, not interpolated)
+      units: meter^-1 steradian^-1
+      coverage_content_type: physicalMeasurement
+      long_name: null
+    decimal_pts: null
+    nc_type: f
+  wlbb2fl_sig470nm_adjusted_ref:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: wlbb2fl_sig470nm_adjusted_ref
+    nc_attribs:
+      FillValue: -999
+      l3: low-pass filtered wlbb2fl_sig470nm_adjusted, {despike_running_mean_dx:0.1f} days and {despike_running_mean_dy:0.1f} m
+      units: meter^-1 steradian^-1
+      long_name: null
+      coverage_content_type: qualityInformation
+    nc_type: f
+    decimal_pts: null
+  wlbb2fl_sig470nm_adjusted_rms_ref:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: wlbb2fl_sig470nm_adjusted_rms_ref
+    nc_attribs:
+      FillValue: -999
+      l3: rms of wlbb2fl_sig470nm_adjusted within smoothing window (high-freq variance). Despiker removes data more than {despike_deviations_for_mean:0.1f} deviations for mean
+      units: meter^-1 steradian^-1
+      long_name: null
+      coverage_content_type: qualityInformation
+    nc_type: f
+    decimal_pts: null
+  wlbb2fl_sig470nm_adjusted_flags:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: wlbb2fl_sig470nm_adjusted_flags
+    nc_attribs:
+      FillValue: -127
+      l3: "qc flag for wlbb2fl_sig470nm_adjusted: 0 no data (interpolated), 1 outside despiker, 2 is good"
+      units: null
+      long_name: null
+      coverage_content_type: qualityInformation
+    nc_type: b
+    decimal_pts: 0
+  wlbb2fl_sig700nm_adjusted:
+    qc_name: null
+    time_name: wlbb2fl_time
+    truck_time_name: time
+    depth_name: null
+    despike: true
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_L1_dimensions: ['obs_wlbb2fl']
+    nc_varname: wlbb2fl_sig700nm_adjusted
+    nc_attribs:
+      FillValue: -999
+      instrument: inst_wlbb2fl
+      l1: total volume red scattering coefficient using manufacturer-supplied dark counts and scaling factor
+      l2: total volume red scattering coefficient using manufacturer-supplied dark counts and scaling factor
+      l3: total volume red scattering coefficient using manufacturer-supplied dark counts and scaling factor interpolated over gaps < {max_depth_gap}m
+      #units: meter^-1 steradian^-1
+      units: m-1 sr-1
+      #standard_name: "NONE"
+      standard_name: volume_scattering_function_of_radiative_flux_in_sea_water
+      long_name: total volume red scattering coefficient using manufacturer-supplied dark counts and scaling factor
+      coordinates : "wlbb2fl_time"
+      coverage_content_type: physicalMeasurement
+    nc_type: f
+    decimal_pts: null
+  wlbb2fl_sig700nm_adjusted_np:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: N_wlbb2fl_sig700nm_adjusted
+    include_in_L3: false    
+    nc_attribs:
+      FillValue: -999
+      description: number of observations in the bin
+      coverage_content_type: auxiliaryInformation
+      units: null
+      long_name: null
+      coverage_content_type: qualityInformation
+    nc_type: s
+    decimal_pts: 0
+  wlbb2fl_sig700nm_adjusted_L2:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: wlbb2fl_sig700nm_adjusted_L2
+    nc_attribs:
+      FillValue: -999
+      l3: level 2 wlbb2fl_sig700nm_adjusted (no despiker, not interpolated)
+      units: meter^-1 steradian^-1
+      coverage_content_type: qualityInformation
+      long_name: null
+    nc_type: f
+    decimal_pts: null
+  wlbb2fl_sig700nm_adjusted_ref:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: wlbb2fl_sig700nm_adjusted_ref
+    nc_attribs:
+      FillValue: -999
+      l3: low-pass filtered wlbb2fl_sig700nm_adjusted, {despike_running_mean_dx:0.1f} days and {despike_running_mean_dy:0.1f} m
+      units: meter^-1 steradian^-1
+      long_name: null
+      coverage_content_type: qualityInformation
+    nc_type: f
+    decimal_pts: null
+  wlbb2fl_sig700nm_adjusted_rms_ref:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: wlbb2fl_sig700nm_adjusted_rms_ref
+    nc_attribs:
+      FillValue: -999
+      l3: rms of wlbb2fl_sig700nm_adjusted within smoothing window (high-freq variance). Despiker removes data more than {despike_deviations_for_mean:0.1f} deviations for mean
+      units: meter^-1 steradian^-1
+      long_name: null
+      coverage_content_type: qualityInformation
+    nc_type: f
+    decimal_pts: null
+  wlbb2fl_sig700nm_adjusted_flags:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: wlbb2fl_sig700nm_adjusted_flags
+    nc_attribs:
+      FillValue: -127
+      l3: "qc flag for wlbb2fl_sig700nm_adjusted: 0 no data (interpolated), 1 outside despiker, 2 is good"
+      units: null
+      long_name: null
+      coverage_content_type: qualityInformation
+    nc_type: b
+    decimal_pts: 0
+  wlbb2fl_sig695nm_adjusted:
+    qc_name: null
+    time_name: wlbb2fl_time
+    truck_time_name: time
+    depth_name: null
+    despike: true
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_L1_dimensions: ['obs_wlbb2fl']
+    nc_varname: wlbb2fl_sig695nm_adjusted
+    nc_attribs:
+      FillValue: -999
+      instrument: inst_wlbb2fl
+      l1: chlorophyll-a concentration using manufacturer-supplied dark counts and scaling factor based on phytoplankton monoculture
+      l2: chlorophyll-a concentration using manufacturer-supplied dark counts and scaling factor based on phytoplankton monoculture
+      l3: chlorophyll-a concentration using manufacturer-supplied dark counts and scaling factor based on phytoplankton monoculture interpolated over gaps < {max_depth_gap}m
+      #units: micrograms per liter
+      units: "ug L-1"
+      standard_name: mass_concentration_of_chlorophyll_a_in_sea_water
+      long_name: chlorophyll-a concentration using manufacturer-supplied dark counts and scaling factor based on phytoplankton monoculture
+      coordinates : "wlbb2fl_time"
+      coverage_content_type: physicalMeasurement
+    nc_type: f
+    decimal_pts: null
+  wlbb2fl_sig695nm_adjusted_np:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: N_wlbb2fl_sig695nm_adjusted
+    include_in_L3: false
+    nc_attribs:
+      FillValue: -999
+      description: number of observations in the bin
+      coverage_content_type: auxiliaryInformation
+      units: null
+      long_name: null
+    nc_type: s
+    decimal_pts: 0
+  wlbb2fl_sig695nm_adjusted_L2:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: wlbb2fl_sig695nm_adjusted_L2
+    nc_attribs:
+      FillValue: -999
+      l3: level 2 wlbb2fl_sig695nm_adjusted (no despiker, not interpolated)
+      units: micrograms/liter
+      coverage_content_type: physicalMeasurement
+      long_name: null
+    nc_type: f
+    decimal_pts: null
+  wlbb2fl_sig695nm_adjusted_ref:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: wlbb2fl_sig695nm_adjusted_ref
+    nc_attribs:
+      FillValue: -999
+      l3: low-pass filtered wlbb2fl_sig695nm_adjusted, {despike_running_mean_dx:0.1f} days and {despike_running_mean_dy:0.1f} m
+      units: micrograms/liter
+      long_name: null
+      coverage_content_type: qualityInformation
+    nc_type: f
+    decimal_pts: null
+  wlbb2fl_sig695nm_adjusted_rms_ref:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: wlbb2fl_sig695nm_adjusted_rms_ref
+    nc_attribs:
+      FillValue: -999
+      l3: rms of wlbb2fl_sig695nm_adjusted within smoothing window (high-freq variance). Despiker removes data more than {despike_deviations_for_mean:0.1f} deviations for mean
+      units: micrograms/liter
+      long_name: null
+      coverage_content_type: qualityInformation      
+    nc_type: f
+    decimal_pts: null
+  wlbb2fl_sig695nm_adjusted_flags:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: wlbb2fl_sig695nm_adjusted_flags
+    nc_attribs:
+      FillValue: -127
+      l3: "qc flag for wlbb2fl_sig695nm_adjusted: 0 no data (interpolated), 1 outside despiker, 2 is good"
+      units: null
+      long_name: null
+      coverage_content_type: qualityInformation      
+    nc_type: b
+    decimal_pts: 0
+  wlbb2fl_time:
+    qc_name: null
+    time_name: ctd_time
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_L1_dimensions: ['obs_wlbb2fl']
+    include_in_L23: false
+    nc_varname: wlbb2fl_time
+    nc_attribs:
+      FillValue: null
+      description: date for every sample point
+      units: seconds since 1970-1-1T00:00:00Z
+      standard_name: time
+      long_name: wlbb2fl time
+      coverage_content_type: physicalMeasurement
+      axis: T
+      coordinates : "wlbb2fl_time"
+    nc_type: d
+    decimal_pts: 0
+  aa4831_time:
+    qc_name: null
+    time_name: ctd_time
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_L1_dimensions: ['obs_aa4831']
+    include_in_L23: false
+    nc_varname: aa4831_time
+    nc_attribs:
+      FillValue: null
+      description: date in for every sample point
+      units: seconds since 1970-1-1T00:00:00Z
+      standard_name: time
+      long_name: aa4831 time
+      coverage_content_type: physicalMeasurement
+      axis: T
+      coordinates : "aaa4831_time"
+    nc_type: d
+    decimal_pts: 0
+  aa4330_time:
+    qc_name: null
+    time_name: ctd_time
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_L1_dimensions: ['obs_aa4330']
+    include_in_L23: false
+    nc_varname: aa4330_time
+    nc_attribs:
+      FillValue: null
+      description: date for every sample point
+      units: seconds since 1970-1-1T00:00:00Z
+      standard_name: time
+      long_name: aa4330 time
+      coverage_content_type: physicalMeasurement
+      axis: T
+    nc_type: d
+    decimal_pts: 0
+  ocr504i_time:
+    qc_name: null
+    time_name: ctd_time
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_L1_dimensions: ['obs_ocr504i']
+    include_in_L23: false
+    nc_varname: ocr504i_time
+    nc_attribs:
+      FillValue: null
+      description: date for every sample point
+      units: seconds since 1970-1-1T00:00:00Z
+      standard_name: time
+      long_name: ocr504i time
+      coverage_content_type: physicalMeasurement
+      axis: T
+    nc_type: d
+    decimal_pts: 0
+  time_gps_start:
+    qc_name: null
+    time_name: null
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_L1_dimensions: ['profile']
+    include_in_L23: false
+    nc_varname: gps_start_time
+    nc_attribs:
+      FillValue: null
+      units: seconds since 1970-1-1T00:00:00Z
+      standard_name: time
+      long_name: Time of the GPS fix at the start of the dive
+      coverage_content_type: coordinate
+    nc_type: f
+    decimal_pts: 4
+  lat_gps_start:
+    qc_name: null
+    time_name: null
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_L1_dimensions: ['profile']
+    include_in_L23: false
+    nc_varname: gps_start_lat
+    nc_attribs:
+      FillValue: null
+      standard_name: latitude
+      long_name: Latitude of GPS fix at start of the dive
+      units: degrees_north
+      coverage_content_type: coordinate
+      valid_min: -90.0
+      valid_max: 90.0
+    nc_type: f
+    decimal_pts: 4
+  lon_gps_start:
+    qc_name: null
+    time_name: null
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_L1_dimensions: ['profile']
+    include_in_L23: false
+    nc_varname: gps_start_lon
+    nc_attribs:
+      FillValue: null
+      standard_name: longitude
+      long_name: Longitude of the GPS fix at start of the dive
+      units: degrees_east
+      coverage_content_type: coordinate
+      valid_min: -180.0
+      valid_max: 180.0
+    nc_type: f
+    decimal_pts: 4
+  time_gps_end:
+    qc_name: null
+    time_name: null
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_L1_dimensions: ['profile']
+    include_in_L23: false
+    nc_varname: gps_end_time
+    nc_attribs:
+      FillValue: null
+      units: seconds since 1970-1-1T00:00:00Z
+      standard_name: time
+      long_name: Time of the GPS fix at the end of the dive
+      coverage_content_type: coordinate
+    nc_type: f
+    decimal_pts: 4
+  lat_gps_end:
+    qc_name: null
+    time_name: null
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_L1_dimensions: ['profile']
+    include_in_L23: false
+    nc_varname: gps_end_lat
+    nc_attribs:
+      FillValue: null
+      standard_name: latitude
+      long_name: Latitude of GPS fix at end of the dive
+      units: degrees_north
+      coverage_content_type: coordinate
+      valid_min: -90.0
+      valid_max: 90.0
+    nc_type: f
+    decimal_pts: 4
+  lon_gps_end:
+    qc_name: null
+    time_name: null
+    truck_time_name: null
+    depth_name: null
+    despike: false
+    nc_L1_dimensions: ['profile']
+    include_in_L23: false
+    nc_varname: gps_end_lon
+    nc_attribs:
+      FillValue: null
+      standard_name: longitude
+      long_name: Longitude of the GPS fix at end of the dive
+      units: degrees_east
+      coverage_content_type: coordinate
+      valid_min: -180.0
+      valid_max: 180.0
+    nc_type: f
+    decimal_pts: 4
+variables:
+  inst_wlbb2fl:
+    data: -9999
+    nc_varname: inst_wlbb2fl
+    nc_dimensions: [instrument]
+    nc_attribs:
+      FillValue: null
+      make_model: WET Labs ECO Meter chlorophyll fluorometer, 470nm backscatter, 700nm backscatter
+      coverage_content_type: referenceInformation
+    nc_type: d
+    decimal_pts: 4
+  inst_aa4831:
+    data: -9999
+    nc_varname: inst_aa4831
+    nc_dimensions: [instrument]    
+    nc_attribs:
+      FillValue: null
+      make_model: Aanderaa 4831 Oxygen Optode Sensor
+      coverage_content_type: referenceInformation
+    nc_type: d
+    decimal_pts: 4
+  inst_ctd:
+    data: -9999
+    nc_varname: inst_ctd
+    nc_dimensions: [instrument]    
+    nc_attribs:
+      make_model: Unpumped Seabird SBE41
+      coverage_content_type: referenceInformation
+    nc_type: d
+    decimal_pts: 4
