@@ -172,7 +172,7 @@ def main():
         ),
     ):
         plot_dir = nc_file.parent.joinpath("plots")
-        if not plot_dir.exits():
+        if not plot_dir.exists():
             plot_dir.mkdir()
         dsi = xr.open_dataset(nc_file)
 
