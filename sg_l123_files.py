@@ -32,7 +32,6 @@ Routines related to input and validation of config and metadata files
 
 import enum
 from dataclasses import field
-from typing import List, Optional
 
 import yaml
 from pydantic import (
@@ -76,8 +75,8 @@ class GlobalAttributes(BaseModel):
 
 
 class MissionModel(BaseModel):
-    processing_config: Optional[ProcessingConfig]
-    global_attributes: Optional[GlobalAttributes]
+    processing_config: ProcessingConfig | None
+    global_attributes: GlobalAttributes | None
 
 
 def load_mission_meta(mission_meta_filename, logger):
@@ -123,42 +122,42 @@ class NCCoverageContentType(enum.Enum):
 
 
 class NCAttribs(BaseModel):
-    FillValue: Optional[float] = None
-    description: Optional[StrictStr] = None
-    l1: Optional[StrictStr] = None
-    l2: Optional[StrictStr] = None
-    l3: Optional[StrictStr] = None
-    axis: Optional[StrictStr] = None
-    coordinates: Optional[StrictStr] = None
-    instrument: Optional[StrictStr] = None
-    units: Optional[StrictStr]
+    FillValue: float | None = None
+    description: StrictStr | None = None
+    l1: StrictStr | None = None
+    l2: StrictStr | None = None
+    l3: StrictStr | None = None
+    axis: StrictStr | None = None
+    coordinates: StrictStr | None = None
+    instrument: StrictStr | None = None
+    units: StrictStr | None
     coverage_content_type: NCCoverageContentType
-    comments: Optional[StrictStr] = None
-    standard_name: Optional[StrictStr] = None
-    long_name: Optional[StrictStr]
-    valid_min: Optional[StrictFloat] = None
-    valid_max: Optional[StrictFloat] = None
+    comments: StrictStr | None = None
+    standard_name: StrictStr | None = None
+    long_name: StrictStr | None
+    valid_min: StrictFloat | None = None
+    valid_max: StrictFloat | None = None
 
 
 class NCVarMeta(BaseModel):
-    qc_name: Optional[StrictStr] = None
-    time_name: Optional[StrictStr] = None
-    truck_time_name: Optional[StrictStr] = None
-    depth_name: Optional[StrictStr] = None
+    qc_name: StrictStr | None = None
+    time_name: StrictStr | None = None
+    truck_time_name: StrictStr | None = None
+    depth_name: StrictStr | None = None
     despike: bool
     nc_varname: StrictStr
-    nc_dimensions: List[StrictStr] = None
-    nc_L1_dimensions: List[StrictStr] = None
+    nc_dimensions: list[StrictStr] = None
+    nc_L1_dimensions: list[StrictStr] = None
     nc_attribs: NCAttribs
     nc_type: NCDataType
-    decimal_pts: Optional[NonNegativeInt] = None
-    include_in_L23: Optional[bool] = True
-    include_in_L3: Optional[bool] = True
+    decimal_pts: NonNegativeInt | None = None
+    include_in_L23: bool | None = True
+    include_in_L3: bool | None = True
     model_config = ConfigDict(extra="forbid")
 
 
 class NCVarAttribs(BaseModel):
-    FillValue: Optional[float] = None
+    FillValue: float | None = None
     make_model: StrictStr
     coverage_content_type: NCCoverageContentType
     model_config = ConfigDict(extra="forbid")
@@ -167,11 +166,11 @@ class NCVarAttribs(BaseModel):
 class NCVar(BaseModel):
     data: StrictInt
     nc_varname: StrictStr
-    nc_dimensions: List[StrictStr] = None
-    nc_L1_dimensions: List[StrictStr] = None
+    nc_dimensions: list[StrictStr] = None
+    nc_L1_dimensions: list[StrictStr] = None
     nc_attribs: NCVarAttribs
     nc_type: NCDataType
-    decimal_pts: Optional[NonNegativeInt] = None
+    decimal_pts: NonNegativeInt | None = None
     model_config = ConfigDict(extra="forbid")
 
 

@@ -33,7 +33,8 @@ import logging
 import os
 import pathlib
 import time
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import numpy as np
 import plotly.graph_objects

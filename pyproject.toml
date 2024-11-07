@@ -21,6 +21,8 @@ pythonpath = "."
 [tool.ruff]
 line-length = 120
 output-format = 'pylint'
+include = ["./*py", "tests/*py"]
+target-version = "py310"
 
 
 [tool.ruff.lint]
