@@ -42,7 +42,6 @@ import time
 import traceback
 import uuid
 import warnings
-from dataclasses import dataclass
 
 import gsw
 import isodate
@@ -59,7 +58,7 @@ from sg_l123_utils import (
     interp1,
     running_average_non_uniform,
 )
-from utils import AttributeDict, FullPathAction, init_logger, plot_heatmap
+from utils import AttributeDict, FullPathAction, PlotConf, init_logger, plot_heatmap
 
 
 class QualityFlags(enum.IntEnum):
@@ -141,13 +140,13 @@ class Seaglider_L1_L2_L3(AttributeDict):
         self.bin_edges = bin_edges  # bin edges
 
 
-@dataclass
-class PlotConf:
-    """Quick replacement for the conf processing"""
+# @dataclass
+# class PlotConf:
+#    """Quick replacement for the conf processing"""#
 
-    do_plots: bool  # Geenerate main plots
-    do_plots_detailed: bool  # Generate detailed plots
-    interactive: bool  # display the plot in the browser
+#    do_plots: bool  # Geenerate main plots
+#    do_plots_detailed: bool  # Generate detailed plots
+#    interactive: bool  # display the plot in the browser
 
 
 def inventory_vars(dive_ncfs, var_dict, logger):

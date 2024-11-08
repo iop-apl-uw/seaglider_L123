@@ -36,7 +36,6 @@ import sys
 import textwrap
 import time
 import traceback
-from dataclasses import dataclass
 
 import cmocean
 
@@ -45,7 +44,7 @@ import numpy as np
 import plotly
 import xarray as xr
 
-from utils import FullPathAction, init_logger, plot_heatmap
+from utils import FullPathAction, PlotConf, init_logger, plot_heatmap
 
 DEBUG_PDB = False  # Set to True to enter debugger on exceptions
 
@@ -85,13 +84,13 @@ def cmocean_to_plotly(cmap, pl_entries):
     return pl_colorscale
 
 
-@dataclass
-class PlotConf:
-    """Configuration params for plotting"""
+# @dataclass
+# class PlotConf:
+#    """Configuration params for plotting"""
 
-    do_plots: bool  # Geenerate main plots
-    do_plots_detailed: bool  # Generate detailed plots
-    interactive: bool  # display the plot in the browser
+#    do_plots: bool  # Geenerate main plots
+#    do_plots_detailed: bool  # Generate detailed plots
+#    interactive: bool  # display the plot in the browser
 
 
 plot_conf = PlotConf(True, False, False)

@@ -33,6 +33,7 @@ import logging
 import pathlib
 import time
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
@@ -49,7 +50,7 @@ def init_logger(
     log_dir: pathlib.Path | None = None,
     logger_name: str = "default_logger",
     time_stamped_logfile: bool = True,
-):
+) -> logging.Logger:
     """Sets up console logging and if requested file logging
     Returns: logger object
     """
@@ -87,22 +88,31 @@ def init_logger(
 #
 
 
+@dataclass
+class PlotConf:
+    """Quick replacement for the conf processing"""
+
+    do_plots: bool  # Geenerate main plots
+    do_plots_detailed: bool  # Generate detailed plots
+    interactive: bool  # display the plot in the browser
+
+
 def plot_heatmap(
-    data,
-    title,
-    conf,
-    colorscale="Viridis",
-    x=None,
-    y=None,
-    rot90=True,
-    annotation=None,
-    layout=None,
-    hovertemplate=None,
-    output_name=None,
-    trim_zrange=1.0,
-    f_contour=False,
-    f_webp=False,
-):
+    data: Any,
+    title: str,
+    conf: PlotConf,
+    colorscale: str = "Viridis",
+    x: Any = None,
+    y: Any = None,
+    rot90: bool = True,
+    annotation: str | None = None,
+    layout: Any = None,
+    hovertemplate: str | None = None,
+    output_name: str | None = None,
+    trim_zrange: float = 1.0,
+    f_contour: bool = False,
+    f_webp: bool = False,
+) -> None:
     std_config_dict = {
         "modeBarButtonsToRemove": ["lasso2d", "select2d"],
         "scrollZoom": True,
@@ -236,7 +246,7 @@ class FullPathAction(argparse.Action):
 # Misc
 
 
-def ensure_basename(basename):
+def ensure_basename(basename: str) -> str:
     """Returns basename with problematic filename characters replaced
 
     Inputs:
@@ -251,7 +261,7 @@ def ensure_basename(basename):
     return basename.replace(" ", "_").replace(",", "_").replace("/", "_").replace("&", "_")
 
 
-class AttributeDict(dict):
+class AttributeDict(dict[Any, Any]):
     """Allow dot access for dictionaries"""
 
     __getattr__ = dict.__getitem__
