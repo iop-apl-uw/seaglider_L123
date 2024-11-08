@@ -1,0 +1,76 @@
+---
+# Notes - Items prefixed with ### should be updated if this data is be released
+# 
+processing_config:
+  # Days
+  despike_running_mean_dx : 3.0
+  # Meters
+  despike_running_mean_dy: 10.0
+  # Percentage of whole data range to calculate statistics over
+  data_range: 0.95
+  # Removes/interpolates points greater then this from the mean (std dev)
+  despike_deviations_for_mean: 2.0
+  # max gap to interpolate over is less then this (meters)
+  max_depth_gap: 50.0
+  # True - do not include dives that are missing; False they are left as NaN profiles
+  remove_missing_dives: true
+  # Hack for SG219 (and maybe others) to mark the downcast a bad for the ocr504i
+  ocr504i_hack: false
+global_attributes:
+  time_coverage_resolution: "PT1S"
+  geospatial_vertical_units: "meter"
+  geospatial_vertical_resolution: "meter"
+  geospatial_vertical_positive: "no"
+  platform: "glider"
+  #platform: "In Situ Ocean-based Platforms > > SEAGLIDER"
+  platform_vocabulary: "GCMD platform keywords"
+  geospatial_lat_units: "degrees_north"
+  geospatial_lat_resolution: "0.0001"
+  geospatial_lon_units: "degrees_east"
+  geospatial_lon_resolution: "0.0001"
+  geospatial_vertical_positive: "down"
+  geospatial_vertical_units: "meters"
+  institution: "Applied Physics Lab, University of Washington, Seattle, WA"
+  license: "Issued under Creative Commons CC BY 4.0: https://creativecommons.org/licenses/by/4.0/"
+  #keywords_vocabulary: "NASA/GCMD Earth Science Keywords Version 6.0.0.0"
+  keywords_vocabulary: "NASA Global Change Master Directory (GCMD) Science Keyword"
+  metadata_conventions: "Unidata Dataset Discovery v1.0"
+  conventions: "CF-1.8,ACDD-1.3"
+  #standard_name_vocabulary: "CF-1.6"
+  standard_name_vocabulary: "CF Standard Name Table v72"
+  featureType: "trajectoryProfile"
+  nodc_template_version: "NODC_NetCDF_Trajectory_Template_v0.9"
+  naming_authority: "edu.washington.apl"
+  ###naming_authority: "gov.nasa"
+  creator_name: "Craig Lee"
+  creator_url: "https://iop.apl.washington.edu"
+  creator_email: "craiglee@uw.edu"
+  #processing_level: "L3"
+  #doi: "10.5067/SMODE-GLID1"
+  title: "Northwest Association of Networked Ocean Observing Systems: Washington Coast La Push Glider Line"
+  ###id: "SMODE_LX_SEAGLIDERS_TEMP_SALINITY_V1"
+  keywords: "EARTH SCIENCE > OCEANS > SALINITY/DENSITY > CONDUCTIVITY, EARTH SCIENCE > OCEANS > OCEAN TEMPERATURE > TEMPERATURE PROFILES, EARTH SCIENCE > OCEANS > SALINITY/DENSITY > SALINITY"
+  cdm_data_type: "Trajectory"
+  source: "seaglider data"
+  # NEEDS UPDATE
+  #acknowledgement: "This work is a contribution to the ARCTERX Program, a Department Research Initiative funded by the Office of Naval Research, awarded under ONR award N00014-21-1-2885 to University of Washington, Applied Physics Laboratory"
+  history: "None"
+  #metadata_link: "https://doi.org/10.5067/SMODE-GLID1"
+  #creator_institution: "UWA/"
+  creator_institution:  "Applied Physics Lab, University of Washington, Seattle, WA"
+  project: "Northwest Association of Networked Ocean Observing Systems: Washington Coast La Push Glider Line"
+  ## NEEDS UPDATE
+  ##program: "ONR ARCTERX DRI 2023"
+  #contributor_name: "Frederick Bingham"
+  #contributor_role: "Project Data Manager"
+  #publisher_name: "Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA"
+  #publisher_email: "podaac@podaac.jpl.nasa.gov"
+  #publisher_url: "https://podaac.jpl.nasa.gov"
+  #publisher_type: "institution"
+  #publisher_institution: "NASA/JPL/PODAAC"
+  ## NEEDS UPDATE
+  ##sea_name: "Philippine Sea"
+  #instrument: "In Situ/Laboratory Instruments > Profilers/Sounders > > > CTD"
+  #instrument_vocabulary: "GCMD instrument keywords"
+  product_version: "1.0"
+  creator_type: "person"

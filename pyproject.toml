@@ -4,6 +4,7 @@ plugins = ['numpy.typing.mypy_plugin', 'pydantic.mypy']
 mypy_path = '..'
 files = ['sg_l123.py','sg_l123_plot.py', 'sg_l123_utils.py', 'sg_l123_files.py', 'utils.py', 'seaglider_utils.py']
 #strict = true
+disable_error_code = ['attr-defined']
 
 # Much of the numerical computing stack doesn't have type annotations yet.
 [[tool.mypy.overrides]]
@@ -26,7 +27,6 @@ line-length = 120
 output-format = 'pylint'
 include = ["./*py", "tests/*py"]
 target-version = "py310"
-
 
 [tool.ruff.lint]
 select = [

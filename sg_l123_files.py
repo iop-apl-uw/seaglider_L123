@@ -202,7 +202,7 @@ def load_instrument_metadata(var_meta_filename, instrument_meta_filename, logger
                                 # pdb.set_trace()
                             logger.error(f"Skipping {k}")
                         else:
-                            accum[k] = AttributeDict(m.dict())
+                            accum[k] = AttributeDict(m.model_dump())
         except Exception:
             logger.execption(f"Problems processing {filename}")
 

@@ -265,7 +265,7 @@ def inventory_vars(dive_ncfs, var_dict, logger):
 #     setattr(sg_L1, f"{var_n}_depth", l1_depth_list)
 
 
-def main():
+def main(cmdline_args: list[str] = sys.argv) -> int:
     """
     Main entry point
     """
@@ -315,7 +315,7 @@ def main():
         action=FullPathAction,
     )
 
-    args = ap.parse_args()
+    args = ap.parse_args(cmdline_args)
 
     logger = init_logger(
         log_dir=args.L123_dir,
@@ -382,11 +382,12 @@ def main():
         dive_num_L1.append(dd)
     if dives:
         logger.warning(f"Dives(s) {dives} not present")
+    del dives
 
     if L2_L3_conf.remove_missing_dives:
         dives = dives_present
     else:
-        dives = np.arange(1, max_dive_n + 1)
+        dives = list(np.arange(1, max_dive_n + 1))
 
     num_dives = len(dives)
 
@@ -877,12 +878,12 @@ def main():
     logger.info("Interpolating time for L3")
     L3_time = sg_L3[master_time].copy()
     for it in range(np.shape(L3_time)[0]):
-        ii = np.nonzero(np.isfinite(L3_time[it, :]))[0]
-        if len(ii) > 2:
+        iii = np.nonzero(np.isfinite(L3_time[it, :]))[0]
+        if len(iii) > 2:
             L3_time[it, :] = interp1(
                 # sg_L3.z[ii], L3_time[it, ii], sg_L3.z, extrapolate=True
-                sg_L3.z[ii],
-                L3_time[it, ii],
+                sg_L3.z[iii],
+                L3_time[it, iii],
                 sg_L3.z,
             )
     sg_L3["time"] = L3_time
@@ -1211,7 +1212,7 @@ def main():
             "w",
             encoding=encoding,
             # engine="netcdf4",
-            format="netCDF4",
+            format="NETCDF4",
         )
 
     logger.info(f"Finished - took {time.time() - start_time:.3f} secs")
