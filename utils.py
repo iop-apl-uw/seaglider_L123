@@ -30,7 +30,6 @@
 
 import argparse
 import logging
-import os
 import pathlib
 import time
 from collections.abc import Sequence
@@ -47,7 +46,7 @@ import utils
 def init_logger(
     log_level_for_console: str = "info",
     log_level_for_file: str = "debug",
-    log_dir: str = None,
+    log_dir: pathlib.Path | None = None,
     logger_name: str = "default_logger",
     time_stamped_logfile: bool = True,
 ):
@@ -70,13 +69,13 @@ def init_logger(
 
     if log_dir is not None:
         # Add time stamp to log name
-        log_dir = os.path.abspath(os.path.expanduser(log_dir))
+        log_dir = log_dir.expanduser().absolute()
         if time_stamped_logfile:
             ts = time.strftime("%Y%m%d_%H%M%S", time.localtime(time.time()))
             ts = f"_{ts}"
         else:
             ts = ""
-        fh = logging.FileHandler(os.path.join(log_dir, f"{logger_name}{ts}.log"))
+        fh = logging.FileHandler(log_dir.joinpath(f"{logger_name}{ts}.log"))
         fh.setLevel(log_level_for_file.upper())
         fh.setFormatter(formatter)
         logger.addHandler(fh)
@@ -256,5 +255,5 @@ class AttributeDict(dict):
     """Allow dot access for dictionaries"""
 
     __getattr__ = dict.__getitem__
-    __setattr__ = dict.__setitem__
-    __delattr__ = dict.__delitem__
+    __setattr__ = dict.__setitem__  # type: ignore
+    __delattr__ = dict.__delitem__  # type: ignore

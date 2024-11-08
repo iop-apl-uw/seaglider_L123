@@ -146,8 +146,8 @@ class NCVarMeta(BaseModel):
     depth_name: StrictStr | None = None
     despike: bool
     nc_varname: StrictStr
-    nc_dimensions: list[StrictStr] = None
-    nc_L1_dimensions: list[StrictStr] = None
+    nc_dimensions: list[StrictStr] | None = None
+    nc_L1_dimensions: list[StrictStr] | None = None
     nc_attribs: NCAttribs
     nc_type: NCDataType
     decimal_pts: NonNegativeInt | None = None
@@ -166,8 +166,8 @@ class NCVarAttribs(BaseModel):
 class NCVar(BaseModel):
     data: StrictInt
     nc_varname: StrictStr
-    nc_dimensions: list[StrictStr] = None
-    nc_L1_dimensions: list[StrictStr] = None
+    nc_dimensions: list[StrictStr] | None = None
+    nc_L1_dimensions: list[StrictStr] | None = None
     nc_attribs: NCVarAttribs
     nc_type: NCDataType
     decimal_pts: NonNegativeInt | None = None

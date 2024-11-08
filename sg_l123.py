@@ -78,7 +78,7 @@ ddp_dim = "dive_data_point"
 #
 # These are pulled from the per-dive netcdf files first occurance
 #
-platform_specific_attribs = {}
+platform_specific_attribs: dict[str, str | int | float] = {}
 platform_specific_attribs_list = [
     "platform_id",
     "source",
@@ -1224,18 +1224,19 @@ if __name__ == "__main__":
     try:
         if "--profile" in sys.argv:
             sys.argv.remove("--profile")
-            prof_file_name = (
-                pathlib.Path(sys.argv[0]).parent
-                + "_"
-                + time.strftime("%H:%M:%S %d %b %Y %Z", time.gmtime(time.time()))
-                .replace(" ", "_")
-                .replace(",", "_")
-                .replace("/", "_")
-                .replace("&", "_")
-                + ".cprof"
+            prof_file_name = str(
+                pathlib.Path(sys.argv[0]).parent.joinpath(
+                    "_"
+                    + time.strftime("%H:%M:%S %d %b %Y %Z", time.gmtime(time.time()))
+                    .replace(" ", "_")
+                    .replace(",", "_")
+                    .replace("/", "_")
+                    .replace("&", "_")
+                    + ".cprof"
+                )
             )
             # Generate line timings
-            return_val = cProfile.run("main()", filename=prof_file_name)
+            cProfile.run("main()", filename=prof_file_name)
             stats = pstats.Stats(prof_file_name)
             stats.sort_stats("time", "calls")
             stats.print_stats()

@@ -1,9 +1,6 @@
 -r requirements-ci.txt
 #
 # Development related
-## Static Typing
-mypy==1.13.0
-types-PyYAML
 ## Documentation (fill in)
 mkdocs
 mkdocstrings[python]
