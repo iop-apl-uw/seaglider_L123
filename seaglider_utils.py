@@ -78,8 +78,11 @@ def dive_number(ncf_name: pathlib.Path) -> int:
     """
     Return the dive number, from the file per-dive filename
     """
-    _, tail = os.path.split(ncf_name)
-    return int(tail[4:8])
+    try:
+        _, tail = os.path.split(ncf_name)
+        return int(tail[4:8])
+    except Exception:
+        return -1
 
 
 nc_qc_character_base = ord("0")
