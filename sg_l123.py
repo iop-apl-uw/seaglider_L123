@@ -466,7 +466,6 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
     # half profiles and applying QC
     for dive_nc in dive_ncfs:
         ncf = open_netcdf_file(dive_nc, logger=logger)
-        dive_i = dives.index(dive_number(dive_nc))
         if ncf is None:
             logger.warning(f"Skipping {dive_nc}")
             continue
@@ -475,6 +474,8 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
         if "processing_error" in ncf.variables:
             logger.warning(f"{dive_nc} is marked as having a processing error - skipping")
             continue
+
+        dive_i = dives.index(dive_number(dive_nc))
 
         # Variables with single value per dive
         for var_n in dive_vars:
