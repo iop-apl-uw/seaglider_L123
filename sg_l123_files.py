@@ -31,6 +31,8 @@ Routines related to input and validation of config and metadata files
 """
 
 import enum
+import logging
+import pathlib
 from dataclasses import field
 
 import yaml
@@ -79,7 +81,9 @@ class MissionModel(BaseModel):
     global_attributes: GlobalAttributes | None
 
 
-def load_mission_meta(mission_meta_filename, logger):
+def load_mission_meta(
+    mission_meta_filename: pathlib.Path, logger: logging.Logger
+) -> tuple[ProcessingConfig | None, AttributeDict | None]:
     """loads and validates mission meta filename"""
 
     with open(mission_meta_filename, "r") as fi:
@@ -93,14 +97,17 @@ def load_mission_meta(mission_meta_filename, logger):
         mission_model = MissionModel(**mission_dict)
     except ValidationError as e:
         for error in e.errors():
-            location = f"{':'.join([x for x in error['loc']])}"
+            location = f"{':'.join([str(x) for x in error['loc']])}"
             logger.error(f"In {mission_meta_filename} - {location}, {error['msg']}, input:{error['input']}")
         return (None, None)
 
     # Note: Since mission_model.processing_config is a dataclass, not a pydantic model,
     # it cannot be wrapped with an AttributeDict since is it not iterable.  This isn't an issue
     # for the use in the main code.
-    return (mission_model.processing_config, AttributeDict(mission_model.global_attributes))
+    return (
+        mission_model.processing_config,
+        AttributeDict(mission_model.global_attributes) if mission_model.global_attributes is not None else None,
+    )
 
 
 class NCDataType(enum.Enum):
@@ -174,9 +181,11 @@ class NCVar(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-def load_instrument_metadata(var_meta_filename, instrument_meta_filename, logger):
-    L2_L3_var_meta = {}
-    additional_variables = {}
+def load_instrument_metadata(
+    var_meta_filename: pathlib.Path, instrument_meta_filename: pathlib.Path, logger: logging.Logger
+) -> tuple[dict[str, AttributeDict], dict[str, AttributeDict]]:
+    L2_L3_var_meta: dict[str, AttributeDict] = {}
+    additional_variables: dict[str, AttributeDict] = {}
     for filename in (var_meta_filename, instrument_meta_filename):
         if filename is None:
             continue
@@ -197,7 +206,7 @@ def load_instrument_metadata(var_meta_filename, instrument_meta_filename, logger
                                 continue
                         except ValidationError as e:
                             for error in e.errors():
-                                location = f"{k}:{':'.join([x for x in error['loc']])}"
+                                location = f"{k}:{':'.join([str(x) for x in error['loc']])}"
                                 logger.error(f"In {filename} - {location}, {error['msg']}, input:{error['input']}")
                                 # pdb.set_trace()
                             logger.error(f"Skipping {k}")

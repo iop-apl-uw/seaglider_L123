@@ -26,21 +26,28 @@
 ## LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 ## OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import logging
 import os
+import pathlib
 import traceback
+from typing import Any, Literal
 
 import netCDF4
 import numpy as np
 import scipy
+from numpy.typing import NDArray
 
 # File handling
 
 
-def open_netcdf_file(filename, mode="r", mmap=None, version=1, logger=None):
+def open_netcdf_file(
+    filename: pathlib.Path,
+    mode: Literal["r", "w", "r+", "a", "x", "rs", "ws", "r+s", "as"] = "r",
+    logger: logging.Logger | None = None,
+) -> None | netCDF4.Dataset:
     """Common presets for opening netcdf files"""
 
     try:
-        # ncf = netcdf.netcdf_file(filename, mode, mmap=False, version=version)
         ds = netCDF4.Dataset(filename, mode)
         ds.set_auto_mask(False)
 
@@ -52,13 +59,13 @@ def open_netcdf_file(filename, mode="r", mmap=None, version=1, logger=None):
         return ds
 
 
-def collect_dive_ncfiles(mission_dir):
+def collect_dive_ncfiles(mission_dir: pathlib.Path) -> list[pathlib.Path]:
     """Returns a sorted list of all per-dive netcdf files in the
     mission_dir
     """
 
     if not mission_dir:
-        return None
+        return []
 
     dive_files = []
     for m in mission_dir.glob("p???????.nc"):
@@ -67,7 +74,7 @@ def collect_dive_ncfiles(mission_dir):
     return sorted(dive_files)
 
 
-def dive_number(ncf_name):
+def dive_number(ncf_name: pathlib.Path) -> int:
     """
     Return the dive number, from the file per-dive filename
     """
@@ -92,7 +99,8 @@ QC_GOOD = 1  # ok
 # only_good_qc_values = [QC_GOOD, QC_PROBABLY_GOOD, QC_CHANGED]
 
 
-def decode_qc(qc_v):
+# def decode_qc(qc_v: ArrayLike) -> NDArray[np.float64] | float:
+def decode_qc(qc_v: Any) -> Any:
     """Ensure qc vector is a vector of floats"""
     type_qc = type(qc_v)
     if type_qc in np.ScalarType:
@@ -118,38 +126,38 @@ def decode_qc(qc_v):
     return qc_v
 
 
-def find_qc(qc_v, qc_values, mask=False):
-    """Find the location (or provide a mask) of entries in qc_v with the given qc values
-    Inputs:
-    qc_v       - the qc array
-    qc_values  - the qc values you are interested in
-    mask       - whether you want a mask (True) or a set of indicies (False)
+# def find_qc(qc_v: ArrayLike, qc_values, mask=False):
+#     """Find the location (or provide a mask) of entries in qc_v with the given qc values
+#     Inputs:
+#     qc_v       - the qc array
+#     qc_values  - the qc values you are interested in
+#     mask       - whether you want a mask (True) or a set of indicies (False)
 
-    Returns:
-    indices_v  - location (or mask) of those qc values
-    """
-    # indices = (map if mask else filter )(lambda i: qc_v[i] in qc_values, list(range(len(qc_v))))
-    if mask:
-        print("Doesn't work - find fix.  Maybe wrap this with a list()")
-        indices_v = map(lambda i: qc_v[i] in qc_values, list(range(len(qc_v))))
-    else:
-        # In Python3 filter is a generator - this will screw up downstream consumers
-        # who expect the return of this function to look like an array
-        indices_v = list(filter(lambda i: qc_v[i] in qc_values, list(range(len(qc_v)))))
-    return indices_v
+#     Returns:
+#     indices_v  - location (or mask) of those qc values
+#     """
+#     # indices = (map if mask else filter )(lambda i: qc_v[i] in qc_values, list(range(len(qc_v))))
+#     if mask:
+#         print("Doesn't work - find fix.  Maybe wrap this with a list()")
+#         indices_v = map(lambda i: qc_v[i] in qc_values, list(range(len(qc_v))))
+#     else:
+#         # In Python3 filter is a generator - this will screw up downstream consumers
+#         # who expect the return of this function to look like an array
+#         indices_v = list(filter(lambda i: qc_v[i] in qc_values, list(range(len(qc_v)))))
+#     return indices_v
 
 
 def load_var(
-    ncf,
-    var_n,
-    var_qc_n,
-    var_time_n,
-    truck_time_n,
-    var_depth_n,
-    master_time_n,
-    master_depth_n,
-    logger=None,
-):
+    ncf: netCDF4.Dataset,
+    var_n: str,
+    var_qc_n: str,
+    var_time_n: str,
+    truck_time_n: str,
+    var_depth_n: str,
+    master_time_n: str,
+    master_depth_n: str,
+    logger: logging.Logger | None = None,
+) -> tuple[None, None] | tuple[NDArray[np.float64], NDArray[np.float64]]:
     """
     Input:
         ncf - netcdf file object
@@ -204,7 +212,7 @@ def load_var(
     return (var, depth)
 
 
-def interp1_extend(t1, data, t2):
+def interp1_extend(t1: NDArray[np.float64], data: NDArray[np.float64], t2: NDArray[np.float64]) -> NDArray[np.float64]:
     # add 'nearest' data item to the ends of data and t1
     if t2[0] < t1[0]:
         # Copy the first value below the interpolation range
@@ -216,4 +224,5 @@ def interp1_extend(t1, data, t2):
         data = np.append(data, np.array([data[-1]]))
         t1 = np.append(t1, np.array([t2[-1]]))
 
-    return scipy.interpolate.interp1d(t1, data)(t2)
+    retval: NDArray[np.float64] = scipy.interpolate.interp1d(t1, data)(t2)
+    return retval

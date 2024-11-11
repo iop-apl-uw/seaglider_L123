@@ -36,6 +36,7 @@ import sys
 import textwrap
 import time
 import traceback
+from typing import Any
 
 import cmocean
 
@@ -72,15 +73,16 @@ plot_vars = {
 }
 
 
-def cmocean_to_plotly(cmap, pl_entries):
+def cmocean_to_plotly(cmap: Any, pl_entries: int) -> list[Any]:
     """Convert cmocean to plotly colorscale"""
     h = 1.0 / (pl_entries - 1)
-    pl_colorscale = []
+    pl_colorscale: list[list[Any]] = []
 
     for k in range(pl_entries):
         C = list(map(np.uint8, np.array(cmap(k * h)[:3]) * 255))
         pl_colorscale.append([k * h, "rgb" + str((C[0], C[1], C[2]))])
 
+    pdb.set_trace()
     return pl_colorscale
 
 
@@ -100,7 +102,7 @@ plot_conf = PlotConf(True, False, False)
 plot_dives = True
 
 
-def main():
+def main() -> None:
     """Main cmdline entry point"""
     ap = argparse.ArgumentParser(description=__doc__)
     # Add verbosity arguments
@@ -176,7 +178,6 @@ def main():
         dsi = xr.open_dataset(nc_file)
 
         depth = dsi.variables["z"].to_numpy()
-        dive = None
 
         if "dive" in dsi.variables and plot_dives:
             dive = dsi.variables["dive"].to_numpy()
@@ -250,6 +251,7 @@ def main():
             gps_meta = []
             profile_meta = []
             dive_meta = []
+            assert dive is not None
             for ii in range(len(dive) // 2):
                 gps_meta.append(f"Dive {dive[ii * 2]} GPS2")
                 gps_meta.append(f"Dive {dive[(ii * 2) + 1]} GPSE")

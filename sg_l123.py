@@ -33,6 +33,7 @@ import argparse
 import cProfile
 import enum
 import itertools
+import logging
 import math
 import pathlib
 import pdb
@@ -42,6 +43,7 @@ import time
 import traceback
 import uuid
 import warnings
+from typing import Any, Literal
 
 import gsw
 import isodate
@@ -96,7 +98,7 @@ platform_specific_attribs_list = [
 ]
 
 
-def fix_ints(data_type, attrs):
+def fix_ints(data_type: type, attrs: dict[str, Any]) -> dict[str, Any]:
     """Convert int values from LL (yaml format) to appropriate size per gliderdac specs"""
     new_attrs = {}
     for k, v in attrs.items():
@@ -109,7 +111,7 @@ def fix_ints(data_type, attrs):
     return new_attrs
 
 
-def average_position(gps_a_lat, gps_a_lon, gps_b_lat, gps_b_lon):
+def average_position(gps_a_lat: float, gps_a_lon: float, gps_b_lat: float, gps_b_lon: float) -> tuple[float, float]:
     """Given two gps positions in D.D format,
     calculate the mean position between them, based on the great cicle route
     """
@@ -133,23 +135,12 @@ def average_position(gps_a_lat, gps_a_lon, gps_b_lat, gps_b_lon):
 class Seaglider_L1_L2_L3(AttributeDict):
     """Struct for holding all variables"""
 
-    def __init__(self, dive_num, dive_num_single_L1, z, bin_edges):
-        self.dive_num = dive_num  # Map half profiles to dive number - mostly for ncf and plotting
-        self.dive_num_single_L1 = dive_num_single_L1  # Dive numbers for L1 product
-        self.z = z  # bin centers
-        self.bin_edges = bin_edges  # bin edges
+    pass
 
 
-# @dataclass
-# class PlotConf:
-#    """Quick replacement for the conf processing"""#
-
-#    do_plots: bool  # Geenerate main plots
-#    do_plots_detailed: bool  # Generate detailed plots
-#    interactive: bool  # display the plot in the browser
-
-
-def inventory_vars(dive_ncfs, var_dict, logger):
+def inventory_vars(
+    dive_ncfs: list[pathlib.Path], var_dict: dict[str, AttributeDict], logger: logging.Logger
+) -> tuple[list[str], list[str], list[str]]:
     """
     Input:
         dive_ncfs - sorted list of dive netcdf file names
@@ -167,6 +158,8 @@ def inventory_vars(dive_ncfs, var_dict, logger):
     # We could do a complete search
     for dive_ncf in dive_ncfs:
         ncf = open_netcdf_file(dive_ncf, logger=logger)
+        if ncf is None:
+            continue
         if "processing_error" in ncf.variables:
             # logger.warning(
             #     f"{dive_ncf} is marked as having a processing error - using anyway"
@@ -264,7 +257,7 @@ def inventory_vars(dive_ncfs, var_dict, logger):
 #     setattr(sg_L1, f"{var_n}_depth", l1_depth_list)
 
 
-def main(cmdline_args: list[str] = sys.argv) -> int:
+def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
     """
     Main entry point
     """
@@ -365,6 +358,9 @@ def main(cmdline_args: list[str] = sys.argv) -> int:
     # Collect all files - returns sorted
     dive_ncfs = collect_dive_ncfiles(args.profile_dir)
 
+    if not dive_ncfs:
+        logger.error(f"No dives found in {args.profile_dir} - bailing")
+
     max_dive_n = dive_number(dive_ncfs[-1])
 
     # Check what dives are not present
@@ -415,9 +411,23 @@ def main(cmdline_args: list[str] = sys.argv) -> int:
     bin_edges[0] = -20.0
     bin_edges[-1] = 1050.0
 
-    sg_L1 = Seaglider_L1_L2_L3(None, None, None, None)
-    sg_L2 = Seaglider_L1_L2_L3(dive_num, dive_num_L1, bin_centers, bin_edges)
-    sg_L3 = Seaglider_L1_L2_L3(dive_num, None, bin_centers, bin_edges)
+    sg_L1 = Seaglider_L1_L2_L3()
+    sg_L1.dive_num = None
+    sg_L1.dive_num_single_L1 = None
+    sg_L1.z = None
+    sg_L1.bin_edges = None
+
+    sg_L2 = Seaglider_L1_L2_L3()
+    sg_L2.dive_num = np.array(dive_num, dtype=np.int16)
+    sg_L2.dive_num_single_L1 = np.array(dive_num_L1, dtype=np.int16)
+    sg_L2.z = np.array(bin_centers, dtype=np.int16)
+    sg_L2.bin_edges = np.array(bin_edges, dtype=np.int16)
+
+    sg_L3 = Seaglider_L1_L2_L3()
+    sg_L3.dive_num = np.array(dive_num, dtype=np.int16)
+    sg_L3.dive_num_single_L1 = None
+    sg_L3.z = np.array(bin_centers, dtype=np.int16)
+    sg_L3.bin_edges = np.array(bin_edges, dtype=np.int16)
 
     ncf_L2_vars = ["z", "dive_num"]
     ncf_L3_vars = ["z", "dive_num"]
@@ -533,6 +543,9 @@ def main(cmdline_args: list[str] = sys.argv) -> int:
                 )
                 if var is None:
                     logger.error(f"Failed to load {var_n} from {dive_nc} - skipping")
+                    continue
+                if var_depth is None:
+                    logger.error(f"Failed to load depth varaible for {var_n} from {dive_nc} - skipping")
                     continue
             except KeyError:
                 continue
@@ -670,6 +683,13 @@ def main(cmdline_args: list[str] = sys.argv) -> int:
         var = sg_L1.get(var_n, None)
         var_depth = sg_L1.get(f"{var_n}_depth", None)
 
+        if var is None:
+            logger.error(f"Could not find {var_n} in sg_L1 - skipping")
+            continue
+        if var_depth is None:
+            logger.error(f"Could not find {var_n}_depth in sg_L1 - skipping")
+            continue
+
         l2_var = sg_L2[var_n]
         l2_var_np = sg_L2.get(f"{var_n}_np", None)
 
@@ -762,6 +782,13 @@ def main(cmdline_args: list[str] = sys.argv) -> int:
 
             var = sg_L1.get(var_n, None)
             var_depth = sg_L1.get(f"{var_n}_depth", None)
+
+            if var is None:
+                logger.error(f"Could not find {var_n} in sg_L1 - skipping")
+                continue
+            if var_depth is None:
+                logger.error(f"Could not find {var_n}_depth in sg_L1 - skipping")
+                continue
 
             L3_var = sg_L3[var_n]
 
@@ -929,6 +956,11 @@ def main(cmdline_args: list[str] = sys.argv) -> int:
     for var_n in L2_L3_vars:
         # var_meta = L2_L3_var_meta[var_n]
         var = sg_L3[var_n]
+
+        if var is None:
+            logger.error(f"Could not find {var_n} in sg_L3 - skipping")
+            continue
+
         # var_flags = getattr(sg_L3, f"{var_n}_flags", np.ones(np.shape(var)))
         # var_mask = getattr(sg_L3, f"{var_n}_mask", np.ones(np.shape(var)))
         var_flags = sg_L3[f"{var_n}_flags"]
@@ -973,14 +1005,32 @@ def main(cmdline_args: list[str] = sys.argv) -> int:
     l2_dso = xr.Dataset()
     l3_dso = xr.Dataset()
 
-    def type_mapper(nc_type):
-        mapping_dict = {"b": np.int8, "s": np.int16, "f": np.float32, "d": np.float64}
+    # return_T = typing.typevar("return_T", np.int8, np.int16, np.float32, np.float64)
+    # return_T = TypeVar("return_T", type[np.int8], type[np.int16], type[np.float32], type[np.float64])
+    # -> type[np.int8] | type[np.int16] | type[np.float32] | type[np.float64]:
+
+    def type_mapper(
+        nc_type: Literal["b", "s", "f", "d"],
+    ) -> Any:
+        mapping_dict = {
+            "b": np.int8,
+            "s": np.int16,
+            "f": np.float32,
+            "d": np.float64,
+        }
         if isinstance(nc_type, str) and nc_type in mapping_dict:
             return mapping_dict[nc_type]
         else:
             return np.float64
 
-    def add_variable(var_n, dso, sg_ll, level_value, var_met_alt=None, is_instrument=False):
+    def add_variable(
+        var_n: str,
+        dso: xr.core.dataset.Dataset,
+        sg_ll: Seaglider_L1_L2_L3,
+        level_value: str,
+        var_met_alt: AttributeDict | None = None,
+        is_instrument: bool = False,
+    ) -> None:
         # if var_n == "latitude":
         #    pdb.set_trace()
         if var_met_alt is None:
@@ -1077,8 +1127,7 @@ def main(cmdline_args: list[str] = sys.argv) -> int:
         )
         dso[var_met.nc_varname] = da
 
-    L1_vars = itertools.chain.from_iterable([L1_vars, ncf_L1_vars, dive_vars])
-
+    L1_vars = list(itertools.chain.from_iterable([L1_vars, ncf_L1_vars, dive_vars]))
     L2_vars = itertools.chain.from_iterable([L2_L3_vars, ncf_L2_vars, dive_vars, half_profile_vars])
     L3_vars = itertools.chain.from_iterable([L2_L3_vars, ncf_L3_vars, dive_vars, half_profile_vars])
 
@@ -1200,8 +1249,8 @@ def main(cmdline_args: list[str] = sys.argv) -> int:
         comp = dict(zlib=True, complevel=9)
         # encoding = {var: comp for var in dso.data_vars}
         encoding = {}
-        for var in dso.data_vars:
-            encoding[var] = comp.copy()
+        for nc_var in dso.data_vars:
+            encoding[nc_var] = comp.copy()
             # if template["variables"][var]["type"] == "c":
             #    encoding[var]["char_dim_name"] = template["variables"][var][
             #        "dimensions"

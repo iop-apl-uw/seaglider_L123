@@ -38,13 +38,20 @@ import warnings
 
 import numpy as np
 import scipy
+from numpy.typing import NDArray
 from scipy import signal
 from scipy.stats import binned_statistic
 
-from utils import init_logger, plot_heatmap
+from utils import PlotConf, init_logger, plot_heatmap
 
 
-def interp1(X, V, Xq, assume_sorted=False, extrapolate=False):
+def interp1(
+    X: NDArray[np.float64],
+    V: NDArray[np.float64],
+    Xq: NDArray[np.float64],
+    assume_sorted: bool = False,
+    extrapolate: bool = False,
+) -> NDArray[np.float64]:
     """
     Interpolates to find Vq, the values of the
     underlying function V=F(X) at the query points Xq.
@@ -58,10 +65,26 @@ def interp1(X, V, Xq, assume_sorted=False, extrapolate=False):
         fill_value="extrapolate" if extrapolate else np.nan,
         assume_sorted=assume_sorted,
     )
-    return f(Xq)
+    retval: NDArray[np.float64] = f(Xq)
+    return retval
 
 
-def running_average_non_uniform(x, y, data, DX, DY, FF, plot_conf=None):
+def running_average_non_uniform(
+    x: NDArray[np.float64],
+    y: NDArray[np.float64],
+    data: NDArray[np.float64],
+    DX: int | float,
+    DY: int | float,
+    FF: float,
+    plot_conf: PlotConf | None = None,
+) -> (
+    tuple[
+        NDArray[np.float64],
+        NDArray[np.float64],
+        tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]],
+    ]
+    | tuple[None, None, None]
+):
     """Calculates the average and standard deviation over data, using only the
     middle FF percentage of the data set.
 
@@ -82,7 +105,7 @@ def running_average_non_uniform(x, y, data, DX, DY, FF, plot_conf=None):
         print("Generating mxn x")
         # NYI - this isn't it
         # x = np.tile(x, (np.shape(data)[1],1))
-        return None
+        return (None, None, None)
 
     if len(np.shape(y)) == 1:
         y = np.tile(y, (np.shape(data)[0], 1))
@@ -176,7 +199,7 @@ def running_average_non_uniform(x, y, data, DX, DY, FF, plot_conf=None):
     for n in range(np.shape(x)[0]):
         i1 = np.nonzero(np.isfinite(x[n, :]))[0]
         if len(i1) > 10:
-            x_tmp[n, :] = interp1(i1, x[n, i1], np.arange(np.shape(x)[1]))
+            x_tmp[n, :] = interp1(i1.astype(np.float64), x[n, i1], np.arange(np.shape(x)[1], dtype=np.float64))
 
     if plot_conf:
         plot_heatmap(np.rot90(x_tmp), "x_tmp", colorscale="Inferno", conf=plot_conf)
@@ -190,10 +213,10 @@ def running_average_non_uniform(x, y, data, DX, DY, FF, plot_conf=None):
             x_tmp2[n, :] = interp1(y[n, i1], x_tmp[n, i1], y_ref)
 
     for n in range(np.shape(x_tmp2)[0]):
-        i1 = np.nonzero(np.isfinite(x_tmp2[n, :]))[0]
-        if len(i1) > 2:
-            x_tmp2[n, 0 : i1[0]] = x_tmp2[n, i1[0]]
-            x_tmp2[n, i1[-1] : -1] = x_tmp2[n, i1[-1]]
+        ii1 = np.nonzero(np.isfinite(x_tmp2[n, :]))[0]
+        if len(ii1) > 2:
+            x_tmp2[n, 0 : ii1[0]] = x_tmp2[n, ii1[0]]
+            x_tmp2[n, ii1[-1] : -1] = x_tmp2[n, ii1[-1]]
 
     if plot_conf:
         plot_heatmap(np.rot90(x_tmp2), "x_tmp2", colorscale="Inferno", conf=plot_conf)
@@ -212,25 +235,27 @@ def running_average_non_uniform(x, y, data, DX, DY, FF, plot_conf=None):
 
     # Walk along depth, and interp avg0 to avg1
     for m in range(np.shape(data_avg1)[1]):
-        ii = np.nonzero(np.isfinite(x_tmp2[:, m]))[0]
-        if len(ii) > 2:
-            data_avg1[ii, m] = interp1(x_ref, data_avg0[:, m], x_tmp2[ii, m])
-            data_std1[ii, m] = interp1(x_ref, data_std0[:, m], x_tmp2[ii, m])
+        iii = np.nonzero(np.isfinite(x_tmp2[:, m]))[0]
+        if len(iii) > 2:
+            data_avg1[iii, m] = interp1(x_ref, data_avg0[:, m], x_tmp2[iii, m])
+            data_std1[iii, m] = interp1(x_ref, data_std0[:, m], x_tmp2[iii, m])
 
     if plot_conf:
         plot_heatmap(np.rot90(data_avg1), "data_avg1", conf=plot_conf)
 
     for n in range(np.shape(data_avg)[0]):
-        jj = np.nonzero(np.isfinite(y[n, :]))[0]
-        if len(jj) > 2:
-            data_avg[n, jj] = interp1(y_ref, data_avg1[n, :], y[n, jj])
-            data_std[n, jj] = interp1(y_ref, data_std1[n, :], y[n, jj])
+        jjj = np.nonzero(np.isfinite(y[n, :]))[0]
+        if len(jjj) > 2:
+            data_avg[n, jjj] = interp1(y_ref, data_avg1[n, :], y[n, jjj])
+            data_std[n, jjj] = interp1(y_ref, data_std1[n, :], y[n, jjj])
 
     array_regular_grid = (x_ref, y_ref, data_avg0, data_std0, data_N0)
     return (data_avg, data_std, array_regular_grid)
 
 
-def bindata(x, y, bins, sigma=False):
+def bindata(
+    x: NDArray[np.float64], y: NDArray[np.float64], bins: NDArray[np.float64], sigma: bool = False
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64] | None]:
     """
     Bins y(x) onto bins by averaging, when bins define the right hand side of the bin
     NaNs are ignored.  Values less then bin[0] LHS are included in bin[0],
@@ -268,30 +293,29 @@ def bindata(x, y, bins, sigma=False):
     # bin 1.  Same logic on the right.
     avgs, _, inds = binned_statistic(x, y, statistic="mean", bins=bins)
 
-    bin_count = np.bincount(inds, minlength=bins.size)
+    bin_count = np.bincount(inds, minlength=bins.size).astype(np.float64)
     # Bin number zero number len(bins) are not in the stats, so remove them
     bin_count = bin_count[1 : bins.size]
-    bin_count = bin_count * 1.0  # Convert to float
     bin_count[bin_count == 0] = np.nan
 
     if sigma:
-        sigma, _, _ = binned_statistic(x, y, statistic="std", bins=bins)
-        return (avgs, bin_count, sigma)
+        sigma_v: NDArray[np.float64] = binned_statistic(x, y, statistic="std", bins=bins)[0]
+        return (avgs.astype(np.float64), bin_count, sigma_v)
     else:
-        return (avgs, bin_count, None)
+        return (avgs.astype(np.float64), bin_count, None)
 
 
-def find_gaps(gap_vector, data):
+def find_gaps(gap_vector: NDArray[np.float64], data: NDArray[np.float64]) -> NDArray[np.float64]:
     """Cheezy solution to locating gaps in data."""
     head = len(gap_vector) // 2
 
-    c = signal.convolve(data, gap_vector)
+    c: NDArray[np.float64] = signal.convolve(data, gap_vector)
     tail = len(c) - (head + len(data))
     # print(head, tail, len(c))
     return c[head:-tail]
 
 
-def main():
+def main() -> int:
     """Main entry point for testing"""
     ap = argparse.ArgumentParser(description=__doc__)
     # Add verbosity arguments
@@ -307,7 +331,7 @@ def main():
     # conf = Conf(args.conf)
 
     logger = init_logger(
-        log_dir=".",
+        log_dir=pathlib.Path(".").expandhome().abspath(),
         logger_name=pathlib.Path(__file__).name,
         log_level_for_console="debug" if args.verbose else "info",
     )

@@ -101,7 +101,7 @@ def plot_heatmap(
     data: Any,
     title: str,
     conf: PlotConf,
-    colorscale: str = "Viridis",
+    colorscale: str | list[Any] = "Viridis",
     x: Any = None,
     y: Any = None,
     rot90: bool = True,
@@ -265,5 +265,5 @@ class AttributeDict(dict[Any, Any]):
     """Allow dot access for dictionaries"""
 
     __getattr__ = dict.__getitem__
-    __setattr__ = dict.__setitem__  # type: ignore
-    __delattr__ = dict.__delitem__  # type: ignore
+    __setattr__: Any = dict.__setitem__
+    __delattr__: Any = dict.__delitem__

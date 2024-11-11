@@ -3,8 +3,9 @@ plugins = ['numpy.typing.mypy_plugin', 'pydantic.mypy']
 # This only applies to the basestation extension being checked
 mypy_path = '..'
 files = ['sg_l123.py','sg_l123_plot.py', 'sg_l123_utils.py', 'sg_l123_files.py', 'utils.py', 'seaglider_utils.py']
-#strict = true
+strict = true
 disable_error_code = ['attr-defined']
+python_version = "3.10"
 
 # Much of the numerical computing stack doesn't have type annotations yet.
 [[tool.mypy.overrides]]
