@@ -56,7 +56,9 @@ def init_logger(
     """
     logger = logging.getLogger(logger_name)
     logger.setLevel(level=logging.DEBUG)
-    logger.propagate = False
+    # Prevents propagation to parent logger - not clear this was ever correct
+    # Prevented pytest from capturing log messages
+    # logger.propagate = False
 
     formatter = logging.Formatter(
         "%(asctime)s: %(levelname)s: %(filename)s(%(lineno)d): %(message)s",
