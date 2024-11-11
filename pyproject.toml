@@ -20,6 +20,10 @@ module = [
     "isodate.*",
 ]
 
+#[tool.pytest]
+# To enable live logging during tests
+#log_cli = true
+
 [tool.pytest.ini_options]
 pythonpath = "."
 
