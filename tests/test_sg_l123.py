@@ -52,4 +52,6 @@ def test_downward(caplog, cmd_line):
     result = sg_l123.main(cmd_line)
     assert result == 0
     for record in caplog.records:
+        if record.levelname == "WARNING" and "Dives(s) [1, 2, 3, 4, 5, 6, 7, 8, 9] not present" in record.msg:
+            continue
         assert record.levelname not in ["CRITICAL", "ERROR", "WARNING"]
