@@ -1050,9 +1050,7 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
             elif var_met.nc_attribs["description"]:
                 descr_str = var_met.nc_attribs["description"]
 
-            if not descr_str:
-                logger.warning(f"No valid description found for {var_n}")
-            else:
+            if descr_str:
                 description = descr_str.format(
                     max_depth_gap=L2_L3_conf.max_depth_gap,
                     despike_deviations_for_mean=L2_L3_conf.despike_deviations_for_mean,
@@ -1060,6 +1058,9 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
                     despike_running_mean_dy=L2_L3_conf.despike_running_mean_dy,
                 )
                 attribs["description"] = description
+            elif "long_name" not in var_met.nc_attribs:
+                logger.warning(f"No valid description or long_name found for {var_n}")
+
         for k, v in var_met.nc_attribs.items():
             if k == "FillValue":
                 if v is None:
