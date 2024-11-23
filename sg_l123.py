@@ -43,7 +43,7 @@ import time
 import traceback
 import uuid
 import warnings
-from typing import Any, Literal
+from typing import Any, Final, Literal
 
 import gsw
 import isodate
@@ -69,33 +69,12 @@ class QualityFlags(enum.IntEnum):
     good = 2
 
 
-DEBUG_PDB = True
+DEBUG_PDB: Final = True
 
 # nc dimension names
-zdp_dim = "z_data_point"
-hpdp_dim = "half_profile_data_point"
-ddp_dim = "dive_data_point"
-
-#
-# These are pulled from the per-dive netcdf files first occurance
-#
-platform_specific_attribs: dict[str, str | int | float] = {}
-platform_specific_attribs_list = [
-    "platform_id",
-    "source",
-    "summary",
-    "project",
-    "glider",
-    "mission",
-    "seaglider_software_version",
-    "base_station_version",
-    "base_station_micro_version",
-    "quality_control_version",
-    # "processing_level",
-    # "instrument",
-    # "title",
-    # "keywords",
-]
+zdp_dim: Final = "z_data_point"
+hpdp_dim: Final = "half_profile_data_point"
+ddp_dim: Final = "dive_data_point"
 
 
 def fix_ints(data_type: type, attrs: dict[str, Any]) -> dict[str, Any]:
@@ -139,7 +118,11 @@ class Seaglider_L1_L2_L3(AttributeDict):
 
 
 def inventory_vars(
-    dive_ncfs: list[pathlib.Path], var_dict: dict[str, AttributeDict], logger: logging.Logger
+    dive_ncfs: list[pathlib.Path],
+    var_dict: dict[str, AttributeDict],
+    platform_specific_attribs: dict[str, str | int | float],
+    platform_specific_attribs_list: tuple[str, ...],
+    logger: logging.Logger,
 ) -> tuple[list[str], list[str], list[str]]:
     """
     Input:
@@ -261,6 +244,27 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
     """
     Main entry point
     """
+    #
+    # These are pulled from the per-dive netcdf files first occurance
+    #
+    platform_specific_attribs: dict[str, str | int | float] = {}
+    platform_specific_attribs_list = (
+        "platform_id",
+        "source",
+        "summary",
+        "project",
+        "glider",
+        "mission",
+        "seaglider_software_version",
+        "base_station_version",
+        "base_station_micro_version",
+        "quality_control_version",
+        # "processing_level",
+        # "instrument",
+        # "title",
+        # "keywords",
+    )
+
     ap = argparse.ArgumentParser(description=__doc__)
     # Add verbosity arguments
 
@@ -387,7 +391,9 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
     num_dives = len(dives)
 
     # Inventories dives to find variables to process
-    dive_vars, L2_L3_vars, L1_vars = inventory_vars(dive_ncfs, L2_L3_var_meta, logger)
+    dive_vars, L2_L3_vars, L1_vars = inventory_vars(
+        dive_ncfs, L2_L3_var_meta, platform_specific_attribs, platform_specific_attribs_list, logger
+    )
     dive_vars += ["time_dive", "lat_dive", "lon_dive"]
 
     logger.info("Using following global_attributes from per-dive netcdfs")

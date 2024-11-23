@@ -36,7 +36,7 @@ import sys
 import textwrap
 import time
 import traceback
-from typing import Any
+from typing import Any, Final
 
 import cmocean
 
@@ -47,9 +47,9 @@ import xarray as xr
 
 from utils import FullPathAction, PlotConf, init_logger, plot_heatmap
 
-DEBUG_PDB = False  # Set to True to enter debugger on exceptions
+DEBUG_PDB: Final = False  # Set to True to enter debugger on exceptions
 
-plot_vars = {
+plot_vars: Final = {
     "T": cmocean.cm.thermal,
     "S": cmocean.cm.haline,
     "P": cmocean.cm.dense,
@@ -72,6 +72,12 @@ plot_vars = {
     "wlbb2fl_sig695nm_adjusted": cmocean.cm.algae,
 }
 
+plot_conf: Final = PlotConf(True, False, False)
+
+# Set to True if you want to see the missing dives.  Sometimes, the heatmap will screw up in the
+# display if this is true
+plot_dives: Final = True
+
 
 def cmocean_to_plotly(cmap: Any, pl_entries: int) -> list[Any]:
     """Convert cmocean to plotly colorscale"""
@@ -84,22 +90,6 @@ def cmocean_to_plotly(cmap: Any, pl_entries: int) -> list[Any]:
 
     pdb.set_trace()
     return pl_colorscale
-
-
-# @dataclass
-# class PlotConf:
-#    """Configuration params for plotting"""
-
-#    do_plots: bool  # Geenerate main plots
-#    do_plots_detailed: bool  # Generate detailed plots
-#    interactive: bool  # display the plot in the browser
-
-
-plot_conf = PlotConf(True, False, False)
-
-# Set to True if you want to see the missing dives.  Sometimes, the heatmap will screw up in the
-# display if this is true
-plot_dives = True
 
 
 def main() -> None:

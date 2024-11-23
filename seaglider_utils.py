@@ -30,7 +30,7 @@ import logging
 import os
 import pathlib
 import traceback
-from typing import Any, Literal
+from typing import Any, Final, Literal
 
 import netCDF4
 import numpy as np
@@ -85,12 +85,12 @@ def dive_number(ncf_name: pathlib.Path) -> int:
         return -1
 
 
-nc_qc_character_base = ord("0")
-nc_qc_type = "Q"  # the alternative is 'i'
+nc_qc_character_base: Final = ord("0")
+nc_qc_type: Final = "Q"  # the alternative is 'i'
 
 ## For QC indications
 # QC_NO_CHANGE = 0  # no QC performed
-QC_GOOD = 1  # ok
+QC_GOOD: Final = 1  # ok
 # QC_PROBABLY_GOOD = 2  # ...
 # QC_PROBABLY_BAD = 3  # potentially correctable
 # QC_BAD = 4  # untrustworthy and irreperable
