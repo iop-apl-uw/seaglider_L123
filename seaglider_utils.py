@@ -45,7 +45,16 @@ def open_netcdf_file(
     mode: Literal["r", "w", "r+", "a", "x", "rs", "ws", "r+s", "as"] = "r",
     logger: logging.Logger | None = None,
 ) -> None | netCDF4.Dataset:
-    """Common presets for opening netcdf files"""
+    """Opens a netcdf file, and turns off the data mask
+    Args:
+       filename: filename to open
+       mode: open mode
+       logger: Optional logger object
+    Returns:
+        A netCDF4 Dataset object
+    Raise:
+        None: All exceptions a caught and logged - None returned instead
+    """
 
     try:
         ds = netCDF4.Dataset(filename, mode)
@@ -61,7 +70,11 @@ def open_netcdf_file(
 
 def collect_dive_ncfiles(mission_dir: pathlib.Path) -> list[pathlib.Path]:
     """Returns a sorted list of all per-dive netcdf files in the
-    mission_dir
+    mission_dir.
+    Args:
+        mission_dir: Fully qualified path object a Seaglider mission directory
+    Returns:
+        A sorted list of all per-dive netcdf files
     """
 
     if not mission_dir:
@@ -162,16 +175,18 @@ def load_var(
     logger: logging.Logger | None = None,
 ) -> tuple[None, None] | tuple[NDArray[np.float64], NDArray[np.float64]]:
     """
-    Input:
-        ncf - netcdf file object
-        var_n - name of the variable
-        var_qc_n - name of the matching QC variable
-        var_time_n - name of the matching time variable
-        var_depth_n - name of the matching depth variable, or None of there is none
-        master_depth - name of the master depth variable (usually ctd_depth)
-    Returns
-        var - netcdf array, with QC applied (QC_GOOD only)
-        depth - netcdf array for the matching depth (interpolated if need be)
+    Args:
+        ncf: netcdf file object
+        var_n: name of the variable
+        var_qc_n: name of the matching QC variable
+        var_time_n: name of the matching time variable
+        var_depth_n: name of the matching depth variable, or None of there is none
+        master_depth: name of the master depth variable (usually ctd_depth)
+    Returns:
+        var: netcdf array, with QC applied (QC_GOOD only)
+        depth: netcdf array for the matching depth (interpolated if need be)
+    Raises:
+        None: all exceptions caught and converted to return (None,None)
     """
     var = ncf.variables[var_n][:]
     try:
