@@ -1,10 +1,11 @@
 -r requirements-ci.txt
 #
 # Development related
-## Documentation (fill in)
-mkdocs
-mkdocstrings[python]
-mkdocs-material
+## Documentation
+mkdocs==1.6.1
+markdown-include==0.8.1
+mkdocstrings[python]==0.27.0
+mkdocs-material==9.5.46
 ## Misc
 ipython
 flynt

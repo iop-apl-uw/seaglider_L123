@@ -1,11 +1,14 @@
 site_name: Seaglider Level 123 Processing
-
 theme:
   name: "material"
 
 plugins:
   - mkdocstrings
 
+markdown_extensions:
+  - markdown_include.include:
+      base_path: docs
+      
 nav:
   - index.md
   - reference.md
