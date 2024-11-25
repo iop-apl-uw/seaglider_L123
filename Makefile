@@ -24,3 +24,6 @@ testhtml:
 # Runs github workflow locally
 act:
 	-act -j check --container-daemon-socket -  --container-architecture linux/aarch64 push
+
+docs:
+	-mkdocs

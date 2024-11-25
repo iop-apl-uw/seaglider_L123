@@ -48,7 +48,9 @@ select = [
     # isort
     "I",
     # Numpy2.0 compat
-    "NPY201"
+    "NPY201",
+    # Docstrings - not yet
+    #"D"
 ]
 ignore = [
   # redundant-open-modes
@@ -56,3 +58,6 @@ ignore = [
   # Use ternary operator
   "SIM108",
 ]
+# Docstrings - not yet
+#[tool.ruff.lint.pydocstyle]
+#convention = "google"
