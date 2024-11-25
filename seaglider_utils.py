@@ -46,12 +46,15 @@ def open_netcdf_file(
     logger: logging.Logger | None = None,
 ) -> None | netCDF4.Dataset:
     """Opens a netcdf file, and turns off the data mask
+
     Args:
        filename: filename to open
        mode: open mode
        logger: Optional logger object
+
     Returns:
         A netCDF4 Dataset object
+
     Raise:
         None: All exceptions a caught and logged - None returned instead
     """
@@ -71,8 +74,10 @@ def open_netcdf_file(
 def collect_dive_ncfiles(mission_dir: pathlib.Path) -> list[pathlib.Path]:
     """Returns a sorted list of all per-dive netcdf files in the
     mission_dir.
+
     Args:
         mission_dir: Fully qualified path object a Seaglider mission directory
+
     Returns:
         A sorted list of all per-dive netcdf files
     """
@@ -89,7 +94,14 @@ def collect_dive_ncfiles(mission_dir: pathlib.Path) -> list[pathlib.Path]:
 
 def dive_number(ncf_name: pathlib.Path) -> int:
     """
-    Return the dive number, from the file per-dive filename
+    Return the dive number, from the file per-dive filename.
+
+    Args:
+        ncf_name: Path to file name
+
+    Returns:
+        Seagliders dive number.  -1 returned for all error cases and exceptions.
+
     """
     try:
         _, tail = os.path.split(ncf_name)
