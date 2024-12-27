@@ -27,7 +27,7 @@
 ## LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 ## OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Performs L2 and L3 processing on seaglider data and outputs L1/L2/L3 data files"""
+"""Performs L2 and L3 processing on seaglider data and outputs L1/L2/L3 data files."""
 
 import argparse
 import cProfile
@@ -64,6 +64,8 @@ from utils import AttributeDict, FullPathAction, PlotConf, init_logger, plot_hea
 
 
 class QualityFlags(enum.IntEnum):
+    """Quality flags used to annotate L3 data."""
+
     nodata = 0
     outside_despiker = 1
     good = 2
@@ -77,8 +79,20 @@ hpdp_dim: Final = "half_profile_data_point"
 ddp_dim: Final = "dive_data_point"
 
 
-def fix_ints(data_type: type, attrs: dict[str, Any]) -> dict[str, Any]:
-    """Convert int values from LL (yaml format) to appropriate size per gliderdac specs"""
+def fix_attr_type(data_type: type, attrs: dict[str, Any]) -> dict[str, Any]:
+    """Performs certain type conversions on attributes before writing to netCDF format.
+
+    - Convert int values from LL (yaml format) to appropriate size per gliderdac specs.
+
+    - Converts quality flags to an list of ints
+
+    Args:
+        data_type: type convertor function (typically np.int32)
+        attrs: attributes dictionary for a netCDF variable
+
+    Returns:
+        A new dict, with types fixed/converted.
+    """
     new_attrs = {}
     for k, v in attrs.items():
         if isinstance(type(v), int):
@@ -91,8 +105,16 @@ def fix_ints(data_type: type, attrs: dict[str, Any]) -> dict[str, Any]:
 
 
 def average_position(gps_a_lat: float, gps_a_lon: float, gps_b_lat: float, gps_b_lon: float) -> tuple[float, float]:
-    """Given two gps positions in D.D format,
-    calculate the mean position between them, based on the great cicle route
+    """Given two gps positions in D.D format, calculate the mean position between them, based on the great cicle route.
+
+    Args:
+        gps_a_lat: latitude for a postion in degrees
+        gps_a_lon: longitude for a postion in degrees
+        gps_b_lat: latitude for b postion in degrees
+        gps_b_lon: longitude for b postion in degrees
+
+    Returns:
+        lat/lon of mean position
     """
     gps_a_lat_rad = math.radians(gps_a_lat)
     gps_a_lon_rad = math.radians(gps_a_lon)
@@ -112,7 +134,7 @@ def average_position(gps_a_lat: float, gps_a_lon: float, gps_b_lat: float, gps_b
 
 
 class Seaglider_L1_L2_L3(AttributeDict):
-    """Struct for holding all variables"""
+    """Generic Structure for holding all variables L1, L2 and L3 variables internally."""
 
     pass
 
@@ -120,23 +142,28 @@ class Seaglider_L1_L2_L3(AttributeDict):
 def inventory_vars(
     dive_ncfs: list[pathlib.Path],
     var_dict: dict[str, AttributeDict],
-    platform_specific_attribs: dict[str, str | int | float],
     platform_specific_attribs_list: tuple[str, ...],
     logger: logging.Logger,
 ) -> tuple[list[str], list[str], list[str]]:
-    """
-    Input:
-        dive_ncfs - sorted list of dive netcdf file names
+    """Inventories variables in per-dive netcdf files.
 
-    Return:
-        profile_vars - list of profile variables to be processed
-        l1_profile_vars - list of profile variables to be processed for l1 product
-        dive_vars - list of dive variables to be propagated to the final product
-    """
+    Args:
+        dive_ncfs: sorted list of dive netcdf file names
+        var_dict: metadata dictionary
+        platform_specific_attribs_list: list of attributes to pull from per-dive netcdf files
+        logger: logging object of log output
 
+    Returns:
+        profile_vars: list of profile variables to be processed
+        l1_profile_vars: list of profile variables to be processed for l1 product
+        dive_vars: list of dive variables to be propagated to the final product
+        platform_specific_attribs: dictionary of platform specific attributes
+    """
     dive_vars = []
     profile_vars = []
     l1_profile_vars = []
+    platform_specific_attribs: dict[str, str | int | float] = {}
+
     # For now, just consider the first netcdf file that is not marked as haveing a processing error
     # We could do a complete search
     for dive_ncf in dive_ncfs:
@@ -178,7 +205,7 @@ def inventory_vars(
 
         break
 
-    return (dive_vars, profile_vars, l1_profile_vars)
+    return (dive_vars, profile_vars, l1_profile_vars, platform_specific_attribs)
 
 
 # def load_L1_data(
@@ -241,13 +268,15 @@ def inventory_vars(
 
 
 def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
+    """Main entry point for L123 processing.
+
+    Args:
+        cmdline_args: command list arguments to process (used by test harness)
+
+    Returns:
+        0 for success, 1 for any errors
     """
-    Main entry point
-    """
-    #
-    # These are pulled from the per-dive netcdf files first occurance
-    #
-    platform_specific_attribs: dict[str, str | int | float] = {}
+    # These attributes are pulled from the per-dive netcdf files first occurance
     platform_specific_attribs_list = (
         "platform_id",
         "source",
@@ -391,8 +420,8 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
     num_dives = len(dives)
 
     # Inventories dives to find variables to process
-    dive_vars, L2_L3_vars, L1_vars = inventory_vars(
-        dive_ncfs, L2_L3_var_meta, platform_specific_attribs, platform_specific_attribs_list, logger
+    dive_vars, L2_L3_vars, L1_vars, platform_specific_attribs = inventory_vars(
+        dive_ncfs, L2_L3_var_meta, platform_specific_attribs_list, logger
     )
     dive_vars += ["time_dive", "lat_dive", "lon_dive"]
 
@@ -1130,7 +1159,7 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
             dims=dims,
             # dims=template["variables"][var_name]["dimensions"] if not is_str else None,
             # attrs=attribs,
-            attrs=fix_ints(np.int32, attribs),
+            attrs=fix_attr_type(np.int32, attribs),
             # coords=None,
         )
         dso[var_met.nc_varname] = da

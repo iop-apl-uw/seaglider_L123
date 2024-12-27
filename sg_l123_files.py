@@ -26,9 +26,7 @@
 ## LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 ## OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""
-Routines related to input and validation of config and metadata files
-"""
+"""Routines related to input and validation of config and metadata files."""
 
 import enum
 import logging
@@ -52,6 +50,8 @@ from utils import AttributeDict
 
 @dataclass(config=dict(extra="forbid"))
 class ProcessingConfig:
+    """Class for options from config file."""
+
     # Days
     despike_running_mean_dx: float = field(default=3.0)
     # Meters
@@ -69,6 +69,8 @@ class ProcessingConfig:
 
 
 class GlobalAttributes(BaseModel):
+    """Global attributes for output netcdf file as defined in the config files"""
+
     time_coverage_resolution: str = field(default="PT1S")
     # TODO - add in the remaining required fields
 
@@ -77,6 +79,8 @@ class GlobalAttributes(BaseModel):
 
 
 class MissionModel(BaseModel):
+    """Pydanitc model for overall config file"""
+
     processing_config: ProcessingConfig | None
     global_attributes: GlobalAttributes | None
 
@@ -84,8 +88,18 @@ class MissionModel(BaseModel):
 def load_mission_meta(
     mission_meta_filename: pathlib.Path, logger: logging.Logger
 ) -> tuple[ProcessingConfig | None, AttributeDict | None]:
-    """loads and validates mission meta filename"""
+    """Loads and validates mission meta data and procesing configuration.
 
+    Processing config and Global attributes dict can be empty - all missing fields will
+    have default values applied.  Any validation errors result in failure.
+
+    Args:
+        mission_meta_filename: Fully qualified path to the config/metadata yml file
+        logger: logger object for error logging
+
+    Returns:
+        Validation all exceptions caught and converted to return (None,None)
+    """
     with open(mission_meta_filename, "r") as fi:
         mission_dict = yaml.safe_load(fi)
 
