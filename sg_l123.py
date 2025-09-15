@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # -*- python-fmt -*-
-## Copyright (c) 2024  University of Washington.
+## Copyright (c) 2024, 2025  University of Washington.
 ##
 ## Redistribution and use in source and binary forms, with or without
 ## modification, are permitted provided that the following conditions are met:
@@ -71,7 +71,7 @@ class QualityFlags(enum.IntEnum):
     good = 2
 
 
-DEBUG_PDB: Final = True
+DEBUG_PDB: Final = False
 
 # nc dimension names
 zdp_dim: Final = "z_data_point"
