@@ -144,7 +144,7 @@ def inventory_vars(
     var_dict: dict[str, AttributeDict],
     platform_specific_attribs_list: tuple[str, ...],
     logger: logging.Logger,
-) -> tuple[list[str], list[str], list[str]]:
+) -> tuple[list[str], list[str], list[str], dict[str, str | int | float]]:
     """Inventories variables in per-dive netcdf files.
 
     Args:
