@@ -8,12 +8,12 @@ maintained and supported by the [IOP group at APL-UW](https://iop.apl.washington
 
 #  Setup
 
-Clone from github or copy everything in this directory tree locally.  You are strongly advised to setup 
-a python virtual environment to run this code.
+Clone from github or copy everything in this directory tree locally.  You are strongly advised to use
+[uv](https://github.com/astral-sh/uv) to run this code.
 
 To install dependencies:
 
-```pip install -r requirements.txt```
+```uv sync```
 
 # Configuration files
 
@@ -34,7 +34,7 @@ attributes to be edited for your dataset.
 
 # Running
 
-```python seaglider_L123.py [-h] [--verbose] --profile_dir PROFILE_DIR --L123_dir L123_DIR --base_name BASE_NAME [--var_meta VAR_META] --mission_meta MISSION_META```
+```uv run seaglider_L123.py [-h] [--verbose] --profile_dir PROFILE_DIR --L123_dir L123_DIR --base_name BASE_NAME [--var_meta VAR_META] --mission_meta MISSION_META```
 
 where
 
