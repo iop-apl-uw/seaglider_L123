@@ -397,7 +397,7 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
     max_dive_n = dive_number(dive_ncfs[-1])
 
     # Check what dives are not present
-    dives = list(np.arange(1, max_dive_n + 1))
+    dives = [int(ii) for ii in np.arange(1, max_dive_n + 1)]
     dives_present = []
     dive_num = []
     dive_num_L1 = []
