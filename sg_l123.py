@@ -73,6 +73,14 @@ class QualityFlags(enum.IntEnum):
 
 DEBUG_PDB: Final = False
 
+def DEBUG_PDB_F() -> None:
+    """Enter the debugger on exceptions"""
+    if DEBUG_PDB:
+        _, __, traceb = sys.exc_info()
+        traceback.print_exc()
+        pdb.post_mortem(traceb)
+
+
 # nc dimension names
 zdp_dim: Final = "z_data_point"
 hpdp_dim: Final = "half_profile_data_point"
@@ -340,6 +348,20 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
         action=FullPathAction,
     )
 
+    ap.add_argument(
+        "--debug_pdb",
+        default=False,
+        help="Enter the debugger for selected exceptions",
+        action=argparse.BooleanOptionalAction,
+    )
+
+    ap.add_argument(
+        "--skip_processing_errors",
+        default=True,
+        help="Skip netcdf files marked as having processing errors",
+        action=argparse.BooleanOptionalAction,
+    )
+
     args = ap.parse_args(cmdline_args)
 
     logger = init_logger(
@@ -347,6 +369,10 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
         logger_name=pathlib.Path(__file__).name,
         log_level_for_console="debug" if args.verbose else "info",
     )
+    
+    global DEBUG_PDB
+    DEBUG_PDB = args.debug_pdb
+
 
     start_time = time.time()
     logger.info("Starting")
@@ -387,6 +413,8 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
 
     master_depth = "ctd_depth"
     master_time = "ctd_time"
+    truck_depth = "depth"
+    truck_time = "time"
 
     # Collect all files - returns sorted
     dive_ncfs = collect_dive_ncfiles(args.profile_dir)
@@ -507,9 +535,12 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
 
         # Alert to any processing issues
         if "processing_error" in ncf.variables:
-            logger.warning(f"{dive_nc} is marked as having a processing error - skipping")
-            continue
-
+            if args.skip_processing_errors:
+                logger.warning(f"{dive_nc} is marked as having a processing error - skipping")            
+                continue
+            else:
+                logger.warning(f"{dive_nc} is marked as having a processing error - continuing anyway")
+                
         dive_i = dives.index(dive_number(dive_nc))
 
         # Variables with single value per dive
@@ -566,6 +597,12 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
             try:
                 # TODO - need to update loadvar for the time variables for other instruments
                 # to include the time from the truck as that variable, if present
+                if master_time not in ncf.variables or master_depth not in ncf.variables:
+                    m_t = truck_time
+                    m_d = truck_depth
+                else:
+                    m_t = master_time
+                    m_d = master_depth
                 var, var_depth = load_var(
                     ncf,
                     var_n,
@@ -573,8 +610,8 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
                     var_met.time_name,
                     var_met.truck_time_name,
                     var_met.depth_name,
-                    master_time,
-                    master_depth,
+                    m_t,
+                    m_d,
                     logger=logger,
                 )
                 if var is None:
@@ -584,6 +621,7 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
                     logger.error(f"Failed to load depth varaible for {var_n} from {dive_nc} - skipping")
                     continue
             except KeyError:
+                DEBUG_PDB_F()
                 continue
 
             if var_n in L1_vars:

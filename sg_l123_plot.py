@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # -*- python-fmt -*-
-## Copyright (c) 2024  University of Washington.
+## Copyright (c) 2024, 2025  University of Washington.
 ##
 ## Redistribution and use in source and binary forms, with or without
 ## modification, are permitted provided that the following conditions are met:
@@ -70,6 +70,7 @@ plot_vars: Final = {
     "wlbb2fl_sig470nm_adjusted": cmocean.cm.matter,
     "wlbb2fl_sig700nm_adjusted": cmocean.cm.matter,
     "wlbb2fl_sig695nm_adjusted": cmocean.cm.algae,
+    "aa3830_temp": cmocean.cm.thermal,
 }
 
 plot_conf: Final = PlotConf(True, False, False)

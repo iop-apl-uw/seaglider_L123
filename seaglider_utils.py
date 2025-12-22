@@ -1,5 +1,5 @@
 # -*- python-fmt -*-
-## Copyright (c) 2024  University of Washington.
+## Copyright (c) 2024, 2025  University of Washington.
 ##
 ## Redistribution and use in source and binary forms, with or without
 ## modification, are permitted provided that the following conditions are met:
@@ -31,6 +31,8 @@
 import logging
 import os
 import pathlib
+import pdb
+import sys
 import traceback
 from typing import Any, Final, Literal
 
@@ -207,6 +209,10 @@ def load_var(
     Raises:
         None: all exceptions caught and converted to return (None,None)
     """
+    if var_n not in ncf.variables:
+        if logger:
+            logger.warning(f"{var_n} not in dive {ncf.variables["trajectory"][0]}")
+        return (None, None)
     var = ncf.variables[var_n][:]
     try:
         if var_qc_n and var_qc_n in ncf.variables:
@@ -242,7 +248,11 @@ def load_var(
                 ncf.variables[master_depth_n][:],
                 ncf.variables[tmp_time_n][:],
             )
-    except Exception:
+    except Exception as exception:
+        raise exception
+        _, __, traceb = sys.exc_info()
+        traceback.print_exc()
+        pdb.post_mortem(traceb)
         if logger:
             logger.error(f"Could not load {var_n} {traceback.format_exc()}")
         return (None, None)

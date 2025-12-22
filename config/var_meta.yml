@@ -1410,6 +1410,90 @@ varmeta:
       valid_max: 180.0
     nc_type: f
     decimal_pts: 4
+  aa3830_temp:
+    qc_name: aa3830_temp_qc
+    time_name: aa3830_time
+    truck_time_name: time
+    depth_name: null
+    despike: true
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_L1_dimensions: ['obs_aa3830']
+    nc_varname: aa3830_temp
+    nc_attribs:
+      FillValue: -999
+      instrument: inst_aa3830
+      l1: in-situ temperature as reported by the instrument
+      l2: in-situ temperature as reported by the instrument
+      l3: in-situ temperature as reported by the instrument interpolated over gaps < {max_depth_gap}m
+      units: degrees_C
+      standard_name: sea_water_temperature
+      long_name: aa3830 temperature
+      coverage_content_type: physicalMeasurement
+      coordinates: "aa3830_time"
+    nc_type: f
+    decimal_pts: 3
+  aa3830_temp_np:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: N_aa3830_temp
+    include_in_L3: false    
+    nc_attribs:
+      FillValue: -999
+      instrument: inst_aa3830
+      description: number of observations in the bin
+      coverage_content_type: auxiliaryInformation
+      units: null
+      long_name: null
+    nc_type: s
+    decimal_pts: 0
+  aa3830_temp_L2:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: aa3830_temp_L2
+    nc_attribs:
+      FillValue: -999
+      l3: level 2 temperature (no despiker, not interpolated)
+      units: degrees_C
+      coverage_content_type: physicalMeasurement
+      long_name: dissolved oxygen
+    nc_type: f
+    decimal_pts: 3
+  aa3830_temp_ref:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: aa3830_temp_ref
+    nc_attribs:
+      FillValue: -999
+      l3: low-pass filtered temperature, {despike_running_mean_dx:0.1f} days and {despike_running_mean_dy:0.1f} m
+      units: degrees_C
+      long_name: optode temperature
+      coverage_content_type: qualityInformation
+    nc_type: f
+    decimal_pts: 3
+  aa3830_temp_rms_ref:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: aa3830_temp_rms_ref
+    nc_attribs:
+      FillValue: -999
+      l3: rms of temperature within smoothing window (high-freq variance). Despiker removes data more than {despike_deviations_for_mean:0.1f} deviations for mean
+      units: micromoles/kg
+      long_name: null
+      coverage_content_type: qualityInformation
+    nc_type: f
+    decimal_pts: 3
+  aa3830_temp_flags:
+    despike: false
+    nc_dimensions: ['half_profile_data_point', 'z_data_point']
+    nc_varname: aa3830_temp_flags
+    nc_attribs:
+      FillValue: -127
+      description: "qc flag for dissolved oxygen: 0 no data (interpolated), 1 outside despiker, 2 is good"
+      units: null
+      long_name: null
+      coverage_content_type: qualityInformation      
+    nc_type: b
+    decimal_pts: 0
 variables:
   inst_wlbb2fl:
     data: -9999
@@ -1428,6 +1512,16 @@ variables:
     nc_attribs:
       FillValue: null
       make_model: Aanderaa 4831 Oxygen Optode Sensor
+      coverage_content_type: referenceInformation
+    nc_type: d
+    decimal_pts: 4
+  inst_aa3830:
+    data: -9999
+    nc_varname: inst_aa3830
+    nc_dimensions: [instrument]    
+    nc_attribs:
+      FillValue: null
+      make_model: Aanderaa 3830 Oxygen Optode Sensor
       coverage_content_type: referenceInformation
     nc_type: d
     decimal_pts: 4
