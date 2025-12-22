@@ -35,6 +35,7 @@ dev = [
     ## Misc
     "ipython",
     "flynt",
+    "ty"
 ]
 [tool.mypy]
 plugins = ['numpy.typing.mypy_plugin', 'pydantic.mypy']
