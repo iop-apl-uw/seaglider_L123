@@ -1,5 +1,5 @@
 # -*- python-fmt -*-
-## Copyright (c) 2023, 2024  University of Washington.
+## Copyright (c) 2023, 2024, 2025  University of Washington.
 ##
 ## Redistribution and use in source and binary forms, with or without
 ## modification, are permitted provided that the following conditions are met:
@@ -227,6 +227,6 @@ def load_instrument_metadata(
                         else:
                             accum[k] = AttributeDict(m.model_dump())
         except Exception:
-            logger.execption(f"Problems processing {filename}")
+            logger.exception(f"Problems processing {filename}")
 
     return (L2_L3_var_meta, additional_variables)

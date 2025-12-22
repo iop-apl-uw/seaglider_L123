@@ -38,11 +38,13 @@ import time
 import traceback
 from typing import Any, Final
 
+# cmocean establishs the cmocean.cm names by updating the attributes via a locals() call
+# which seems to defeat ty - see below
 import cmocean
 
 # from scipy.io import netcdf_file
 import numpy as np
-import plotly
+import plotly.graph_objects
 import xarray as xr
 
 from utils import FullPathAction, PlotConf, init_logger, plot_heatmap
@@ -50,27 +52,27 @@ from utils import FullPathAction, PlotConf, init_logger, plot_heatmap
 DEBUG_PDB: Final = False  # Set to True to enter debugger on exceptions
 
 plot_vars: Final = {
-    "T": cmocean.cm.thermal,
-    "S": cmocean.cm.haline,
-    "P": cmocean.cm.dense,
-    "SA": cmocean.cm.haline,
-    "CT": cmocean.cm.thermal,
-    "PD": cmocean.cm.dense,
+    "T": cmocean.cm.thermal,  # ty: ignore[unresolved-attribute]
+    "S": cmocean.cm.haline,  # ty: ignore[unresolved-attribute]
+    "P": cmocean.cm.dense,  # ty: ignore[unresolved-attribute]
+    "SA": cmocean.cm.haline,  # ty: ignore[unresolved-attribute]
+    "CT": cmocean.cm.thermal,  # ty: ignore[unresolved-attribute]
+    "PD": cmocean.cm.dense,  # ty: ignore[unresolved-attribute]
     ##    "ocr504i_chan1",
     ##    "ocr504i_chan2",
     ##    "ocr504i_chan3",
     ##    "ocr504i_chan4",
-    "dissolved_oxygen": cmocean.cm.oxy,
+    "dissolved_oxygen": cmocean.cm.oxy,  # ty: ignore[unresolved-attribute]
     ##    # "oxygen_sat",
     ##    # "FL_baseline",
     ##    # "FL_counts",
     ##    # "FL_npqcorr",
     ##    # "baseline_470nm",
     ##    # "baseline_700nm",
-    "wlbb2fl_sig470nm_adjusted": cmocean.cm.matter,
-    "wlbb2fl_sig700nm_adjusted": cmocean.cm.matter,
-    "wlbb2fl_sig695nm_adjusted": cmocean.cm.algae,
-    "aa3830_temp": cmocean.cm.thermal,
+    "wlbb2fl_sig470nm_adjusted": cmocean.cm.matter,  # ty: ignore[unresolved-attribute]
+    "wlbb2fl_sig700nm_adjusted": cmocean.cm.matter,  # ty: ignore[unresolved-attribute]
+    "wlbb2fl_sig695nm_adjusted": cmocean.cm.algae,  # ty: ignore[unresolved-attribute]
+    "aa3830_temp": cmocean.cm.thermal,  # ty: ignore[unresolved-attribute]
 }
 
 plot_conf: Final = PlotConf(True, False, False)

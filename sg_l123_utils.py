@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # -*- python-fmt -*-
-## Copyright (c) 2024  University of Washington.
+## Copyright (c) 2024, 2025  University of Washington.
 ##
 ## Redistribution and use in source and binary forms, with or without
 ## modification, are permitted provided that the following conditions are met:
@@ -331,7 +331,7 @@ def main() -> int:
     # conf = Conf(args.conf)
 
     logger = init_logger(
-        log_dir=pathlib.Path(".").expandhome().abspath(),
+        log_dir=pathlib.Path(".").expanduser().absolute(),
         logger_name=pathlib.Path(__file__).name,
         log_level_for_console="debug" if args.verbose else "info",
     )
@@ -340,7 +340,7 @@ def main() -> int:
 
     x = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     y = x * 10.0
-    bins = np.arange(1.0, 1000.1, 1.0)
+    bins = np.arange(1.0, 1000.1, 1.0).astype(np.float64)
     # print(bins[0], bins[-1])
     avgs, bin_count, sigma = bindata(x, y, bins, sigma=True)
     print(avgs, bin_count, sigma)

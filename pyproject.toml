@@ -24,7 +24,8 @@ ci = [
     ## Linting
     "ruff==0.7.2",
     ## Static Typing
-    "mypy==1.13.0",
+    #"mypy==1.13.0",
+    "ty",
     "types-PyYAML",
 ]
 dev = [
@@ -35,7 +36,6 @@ dev = [
     ## Misc
     "ipython",
     "flynt",
-    "ty"
 ]
 [tool.mypy]
 plugins = ['numpy.typing.mypy_plugin', 'pydantic.mypy']

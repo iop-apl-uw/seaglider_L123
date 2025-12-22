@@ -71,7 +71,8 @@ class QualityFlags(enum.IntEnum):
     good = 2
 
 
-DEBUG_PDB: Final = False
+DEBUG_PDB = False
+
 
 def DEBUG_PDB_F() -> None:
     """Enter the debugger on exceptions"""
@@ -369,10 +370,9 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
         logger_name=pathlib.Path(__file__).name,
         log_level_for_console="debug" if args.verbose else "info",
     )
-    
+
     global DEBUG_PDB
     DEBUG_PDB = args.debug_pdb
-
 
     start_time = time.time()
     logger.info("Starting")
@@ -536,11 +536,11 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
         # Alert to any processing issues
         if "processing_error" in ncf.variables:
             if args.skip_processing_errors:
-                logger.warning(f"{dive_nc} is marked as having a processing error - skipping")            
+                logger.warning(f"{dive_nc} is marked as having a processing error - skipping")
                 continue
             else:
                 logger.warning(f"{dive_nc} is marked as having a processing error - continuing anyway")
-                
+
         dive_i = dives.index(dive_number(dive_nc))
 
         # Variables with single value per dive
@@ -1099,7 +1099,8 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
 
     def add_variable(
         var_n: str,
-        dso: xr.core.dataset.Dataset,
+        # dso: xr.core.dataset.Dataset,
+        dso: xr.Dataset,
         sg_ll: Seaglider_L1_L2_L3,
         level_value: str,
         var_met_alt: AttributeDict | None = None,
