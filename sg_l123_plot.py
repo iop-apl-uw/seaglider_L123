@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # -*- python-fmt -*-
-## Copyright (c) 2024, 2025  University of Washington.
+## Copyright (c) 2024, 2025, 2026, 2026  University of Washington.
 ##
 ## Redistribution and use in source and binary forms, with or without
 ## modification, are permitted provided that the following conditions are met:
@@ -49,7 +49,16 @@ import xarray as xr
 
 from utils import FullPathAction, PlotConf, init_logger, plot_heatmap
 
-DEBUG_PDB: Final = False  # Set to True to enter debugger on exceptions
+DEBUG_PDB = False
+
+
+def DEBUG_PDB_F() -> None:
+    """Enter the debugger on exceptions"""
+    if DEBUG_PDB:
+        _, __, traceb = sys.exc_info()
+        traceback.print_exc()
+        pdb.post_mortem(traceb)
+
 
 plot_vars: Final = {
     "T": cmocean.cm.thermal,  # ty: ignore[unresolved-attribute]
@@ -130,7 +139,17 @@ def main() -> None:
         default=False,
     )
 
+    ap.add_argument(
+        "--debug_pdb",
+        default=False,
+        help="Enter the debugger for selected exceptions",
+        action=argparse.BooleanOptionalAction,
+    )
+
     args = ap.parse_args()
+
+    global DEBUG_PDB
+    DEBUG_PDB = args.debug_pdb
 
     # load our configuration settings
     # conf = Conf(args.conf)
@@ -321,10 +340,7 @@ if __name__ == "__main__":
     except SystemExit:
         pass
     except Exception:
-        if DEBUG_PDB:
-            extype, value, tb = sys.exc_info()
-            traceback.print_exc()
-            pdb.post_mortem(tb)
+        DEBUG_PDB_F()
         sys.stderr.write(f"Exception in main ({traceback.format_exc()})")
 
     sys.exit(0)
