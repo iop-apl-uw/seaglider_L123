@@ -1,5 +1,5 @@
 # -*- python-fmt -*-
-## Copyright (c) 2024, 2025  University of Washington.
+## Copyright (c) 2024, 2025, 2026  University of Washington.
 ##
 ## Redistribution and use in source and binary forms, with or without
 ## modification, are permitted provided that the following conditions are met:
@@ -89,8 +89,37 @@ def collect_dive_ncfiles(mission_dir: pathlib.Path) -> list[pathlib.Path]:
     dive_files = []
     for m in mission_dir.glob("p???????.nc"):
         dive_files.append(m)
+    dive_files = sorted(dive_files)
 
-    return sorted(dive_files)
+    ncdf_files = []
+    for m in mission_dir.glob("p???????.ncdf"):
+        ncdf_files.append(m)
+    ncdf_files = sorted(ncdf_files)
+
+    max_dive_num = max(
+        int(dive_files[-1].name[4:8]) if dive_files else -1,
+        int(ncdf_files[-1].name[4:8]) if ncdf_files else -1,
+    )
+    if max_dive_num <= 0:
+        return []
+
+    if dive_files:
+        glider_id = int(dive_files[-1].name[1:4])
+    elif ncdf_files:
+        glider_id = int(ncdf_files[-1].name[1:4])
+    else:
+        return []
+
+    merged_files = []
+    for dd in range(1, max_dive_num + 1):
+        ncf_name = mission_dir / f"p{glider_id:03d}{dd:04d}.nc"
+        ncdf_name = mission_dir / f"p{glider_id:03d}{dd:04d}.ncdf"
+        if ncf_name in dive_files:
+            merged_files.append(ncf_name)
+        elif ncdf_name in ncdf_files:
+            merged_files.append(ncdf_name)
+
+    return merged_files
 
 
 def dive_number(ncf_name: pathlib.Path) -> int:

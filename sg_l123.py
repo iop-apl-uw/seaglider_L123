@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # -*- python-fmt -*-
-## Copyright (c) 2024, 2025  University of Washington.
+## Copyright (c) 2024, 2025, 2026  University of Washington.
 ##
 ## Redistribution and use in source and binary forms, with or without
 ## modification, are permitted provided that the following conditions are met:
@@ -47,6 +47,7 @@ from typing import Any, Final, Literal
 
 import gsw
 import isodate
+import netCDF4
 import numpy as np
 import xarray as xr
 from scipy import signal
@@ -148,6 +149,38 @@ class Seaglider_L1_L2_L3(AttributeDict):
     pass
 
 
+def remap_ncfd_vars(
+    ncf: netCDF4.Dataset, ncf_file_name: pathlib.Path, logger: logging.Logger
+) -> netCDF4.Dataset | None:
+    # These are profiles, with a single value for time at the start of the profile
+    if "time" not in ncf.variables:
+        return None
+
+    try:
+        if ncf.variables["time"][0][0] == 0:
+            logger.error(f"time val is zero for {ncf_file_name} - skipping")
+            return None
+        ncf.variables["ctd_depth"] = ncf.variables["depth"]
+        ncf.variables.pop("depth")
+        ncf.variables["ctd_time"] = ncf.variables["time"]
+        ncf.variables.pop("time")
+    except KeyError as exception:
+        DEBUG_PDB_F()
+        logger.error(f"{exception} not found in {ncf_file_name} - skipping")
+        return None
+
+    ncf.variables["latitude"] = np.full(np.shape(ncf.variables["ctd_time"][:]), np.nan).astype(np.float64)
+    ncf.variables["longitude"] = np.full(np.shape(ncf.variables["ctd_time"][:]), np.nan).astype(np.float64)
+
+    if "log_GPS" in ncf.variables:
+        ncf.variables["latitude"][0, :] = np.float64(ncf.variables["log_GPS"][1])
+        ncf.variables["longitude"][0, :] = np.float64(ncf.variables["log_GPS"][2])
+
+    # CONSIDER - propagate time to all slots in time vector
+
+    # This is the place to check for and adjust positions based on look aside position table
+
+
 def inventory_vars(
     dive_ncfs: list[pathlib.Path],
     var_dict: dict[str, AttributeDict],
@@ -177,8 +210,15 @@ def inventory_vars(
     # We could do a complete search
     for dive_ncf in dive_ncfs:
         ncf = open_netcdf_file(dive_ncf, logger=logger)
+
         if ncf is None:
             continue
+
+        if dive_ncf.suffix == ".ncdf":
+            remap_ncfd_vars(ncf, dive_ncf, logger)
+            if ncf is None:
+                continue
+
         if "processing_error" in ncf.variables:
             # logger.warning(
             #     f"{dive_ncf} is marked as having a processing error - using anyway"
@@ -186,6 +226,7 @@ def inventory_vars(
             ncf.close()
             continue
         for vv in var_dict:
+            # if ncdf_alias_vars(dive_ncf, vv) in ncf.variables:
             if vv in ncf.variables:
                 # if "nc_dimensions" in var_dict[vv]:
                 if var_dict[vv].nc_dimensions is not None:
@@ -421,6 +462,7 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
 
     if not dive_ncfs:
         logger.error(f"No dives found in {args.profile_dir} - bailing")
+        return 1
 
     max_dive_n = dive_number(dive_ncfs[-1])
 
@@ -529,6 +571,10 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
     # half profiles and applying QC
     for dive_nc in dive_ncfs:
         ncf = open_netcdf_file(dive_nc, logger=logger)
+
+        if dive_nc.suffix == ".ncdf":
+            remap_ncfd_vars(ncf, dive_nc, logger)
+
         if ncf is None:
             logger.warning(f"Skipping {dive_nc}")
             continue
@@ -594,57 +640,91 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
         # and load into the L2 data
         for var_n in set(L1_vars + L2_L3_vars):
             var_met = L2_L3_var_meta[var_n]
-            try:
-                # TODO - need to update loadvar for the time variables for other instruments
-                # to include the time from the truck as that variable, if present
-                if master_time not in ncf.variables or master_depth not in ncf.variables:
-                    m_t = truck_time
-                    m_d = truck_depth
-                else:
-                    m_t = master_time
-                    m_d = master_depth
-                var, var_depth = load_var(
-                    ncf,
-                    var_n,
-                    var_met.qc_name,
-                    var_met.time_name,
-                    var_met.truck_time_name,
-                    var_met.depth_name,
-                    m_t,
-                    m_d,
-                    logger=logger,
-                )
-                if var is None:
-                    logger.error(f"Failed to load {var_n} from {dive_nc} - skipping")
+            if dive_nc.suffix == ".ncdf":
+                if var_n not in ncf.variables:
+                    logger.warning(f"{var_n} not found in {dive_nc} - skipping")
                     continue
-                if var_depth is None:
-                    logger.error(f"Failed to load depth varaible for {var_n} from {dive_nc} - skipping")
+                try:
+                    var = ncf.variables[var_n][:].astype(np.float64)
+                    var_depth = ncf.variables[master_depth][:].astype(np.float64)
+                except KeyError as exception:
+                    logger.error(f"Unable to load variable {exception}")
                     continue
-            except KeyError:
-                DEBUG_PDB_F()
-                continue
 
-            if var_n in L1_vars:
-                L1_list = sg_L1[f"{var_n}_L1"]
-                L1_list[dive_i] = var
+                if var_n in L1_vars:
+                    L1_list = sg_L1[f"{var_n}_L1"]
+                    if var_n == master_depth:
+                        tmp_v = np.hstack((var[:], var[::-1]))
+                    else:
+                        tmp_v = np.hstack((var[0], var[1][::-1]))
+                    L1_list[dive_i] = tmp_v
 
-            # TODO Range checking goes here
+                if var_n in L2_L3_vars:
+                    l1_var_list = sg_L1[var_n]
+                    l1_depth_list = sg_L1[f"{var_n}_depth"]
 
-            if var_n in L2_L3_vars:
-                max_depth_i = np.argmax(var_depth)
-                # l1_var = getattr(sg_L1, var_n)
-                # l1_var[ii * 2, :] = var[0:max_depth_i]
-                # l1_var[ii * 2 + 1, :] = var[max_depth_i:]
+                    if var_n == master_depth:
+                        l1_var_list[dive_i * 2] = var
+                        l1_var_list[dive_i * 2 + 1] = var[::-1]
+                    else:
+                        l1_var_list[dive_i * 2] = var[0]
+                        l1_var_list[dive_i * 2 + 1] = var[1][::-1]
 
-                l1_var_list = sg_L1[var_n]
-                l1_depth_list = sg_L1[f"{var_n}_depth"]
+                    l1_depth_list[dive_i * 2] = var_depth
+                    l1_depth_list[dive_i * 2 + 1] = var_depth[::-1]
+            else:
+                try:
+                    # TODO - need to update loadvar for the time variables for other instruments
+                    # to include the time from the truck as that variable, if present
+                    if master_time not in ncf.variables or master_depth not in ncf.variables:
+                        m_t = truck_time
+                        m_d = truck_depth
+                    else:
+                        m_t = master_time
+                        m_d = master_depth
+                    var, var_depth = load_var(
+                        ncf,
+                        var_n,
+                        var_met.qc_name,
+                        var_met.time_name,
+                        var_met.truck_time_name,
+                        var_met.depth_name,
+                        m_t,
+                        m_d,
+                        logger=logger,
+                    )
+                    if var is None:
+                        logger.error(f"Failed to load {var_n} from {dive_nc} - skipping")
+                        continue
+                    if var_depth is None:
+                        logger.error(f"Failed to load depth varaible for {var_n} from {dive_nc} - skipping")
+                        continue
+                except KeyError:
+                    DEBUG_PDB_F()
+                    continue
 
-                l1_var_list[dive_i * 2] = var[0:max_depth_i]
-                if L2_L3_conf.ocr504i_hack and "ocr504i" in var_n:
-                    l1_var_list[dive_i * 2] = np.nan
-                l1_depth_list[dive_i * 2] = var_depth[0:max_depth_i]
-                l1_var_list[dive_i * 2 + 1] = var[max_depth_i:]
-                l1_depth_list[dive_i * 2 + 1] = var_depth[max_depth_i:]
+                if var_n in L1_vars:
+                    L1_list = sg_L1[f"{var_n}_L1"]
+                    L1_list[dive_i] = var
+
+                # TODO Range checking goes here
+
+                if var_n in L2_L3_vars:
+                    max_depth_i = np.argmax(var_depth)
+                    # l1_var = getattr(sg_L1, var_n)
+                    # l1_var[ii * 2, :] = var[0:max_depth_i]
+                    # l1_var[ii * 2 + 1, :] = var[max_depth_i:]
+
+                    l1_var_list = sg_L1[var_n]
+                    l1_depth_list = sg_L1[f"{var_n}_depth"]
+
+                    l1_var_list[dive_i * 2] = var[0:max_depth_i]
+                    if L2_L3_conf.ocr504i_hack and "ocr504i" in var_n:
+                        l1_var_list[dive_i * 2] = np.nan
+                    l1_depth_list[dive_i * 2] = var_depth[0:max_depth_i]
+                    l1_var_list[dive_i * 2 + 1] = var[max_depth_i:]
+                    l1_depth_list[dive_i * 2 + 1] = var_depth[max_depth_i:]
+
         ncf.close()
 
     # Run importers to get other L1 data
@@ -768,6 +848,7 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
         l2_var_np = sg_L2.get(f"{var_n}_np", None)
 
         for ii in range(num_dives):
+            num_pts = None
             if (
                 var[ii * 2] is not None
                 and not np.isnan(var[ii * 2]).all()
@@ -781,7 +862,7 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
                     )
                 else:
                     l2_var[ii * 2, :], num_pts, _ = bindata(var_depth[ii * 2], var[ii * 2], sg_L2.bin_edges)
-                if l2_var_np is not None:
+                if l2_var_np is not None and num_pts is not None:
                     l2_var_np[ii * 2, :] = num_pts
             if (
                 var[ii * 2 + 1] is not None
@@ -1056,20 +1137,21 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
         sg_L3[f"{var_n}"] = var_interp
 
     # Derived values
-    logger.info("L3 derived variables")
-    sg_L3.P = gsw.p_from_z(-sg_L3.z * np.ones(np.shape(sg_L3.temperature)), sg_L3.latitude)
-    ncf_L3_vars.append("P")
-    sg_L3.SA = gsw.SA_from_SP(sg_L3.salinity, sg_L3.P, sg_L3.longitude, sg_L3.latitude)
-    ncf_L3_vars.append("SA")
-    sg_L3.CT = gsw.CT_from_t(sg_L3.SA, sg_L3.temperature, sg_L3.P)
-    ncf_L3_vars.append("CT")
-    sg_L3.PD = gsw.pot_rho_t_exact(
-        sg_L3.SA,
-        sg_L3.temperature,
-        sg_L3.P,
-        np.zeros(np.shape(sg_L3.temperature)),
-    )
-    ncf_L3_vars.append("PD")
+    if "latitude" in sg_L3:
+        logger.info("L3 derived variables")
+        sg_L3.P = gsw.p_from_z(-sg_L3.z * np.ones(np.shape(sg_L3.temperature)), sg_L3.latitude)
+        ncf_L3_vars.append("P")
+        sg_L3.SA = gsw.SA_from_SP(sg_L3.salinity, sg_L3.P, sg_L3.longitude, sg_L3.latitude)
+        ncf_L3_vars.append("SA")
+        sg_L3.CT = gsw.CT_from_t(sg_L3.SA, sg_L3.temperature, sg_L3.P)
+        ncf_L3_vars.append("CT")
+        sg_L3.PD = gsw.pot_rho_t_exact(
+            sg_L3.SA,
+            sg_L3.temperature,
+            sg_L3.P,
+            np.zeros(np.shape(sg_L3.temperature)),
+        )
+        ncf_L3_vars.append("PD")
 
     #
     # Write out results
@@ -1204,8 +1286,8 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
         dso[var_met.nc_varname] = da
 
     L1_vars = list(itertools.chain.from_iterable([L1_vars, ncf_L1_vars, dive_vars]))
-    L2_vars = itertools.chain.from_iterable([L2_L3_vars, ncf_L2_vars, dive_vars, half_profile_vars])
-    L3_vars = itertools.chain.from_iterable([L2_L3_vars, ncf_L3_vars, dive_vars, half_profile_vars])
+    L2_vars = list(itertools.chain.from_iterable([L2_L3_vars, ncf_L2_vars, dive_vars, half_profile_vars]))
+    L3_vars = list(itertools.chain.from_iterable([L2_L3_vars, ncf_L3_vars, dive_vars, half_profile_vars]))
 
     # Add in all varaibles
     for dso, ll, var_list, level_value in (
@@ -1251,29 +1333,31 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
         lat_name = L2_L3_var_meta["latitude"]["nc_varname"]
         lon_name = L2_L3_var_meta["longitude"]["nc_varname"]
 
-        dso.attrs["geospatial_lon_min"] = np.format_float_positional(
-            np.nanmin(dso[lon_name] if dso is l1_dso else sg_L3.longitude),
-            precision=4,
-            unique=False,
-        )
+        if "longitude" in sg_L3:
+            dso.attrs["geospatial_lon_min"] = np.format_float_positional(
+                np.nanmin(dso[lon_name] if dso is l1_dso else sg_L3.longitude),
+                precision=4,
+                unique=False,
+            )
 
-        dso.attrs["geospatial_lon_max"] = np.format_float_positional(
-            np.nanmax(dso[lon_name] if dso is l1_dso else sg_L3.longitude),
-            precision=4,
-            unique=False,
-        )
+            dso.attrs["geospatial_lon_max"] = np.format_float_positional(
+                np.nanmax(dso[lon_name] if dso is l1_dso else sg_L3.longitude),
+                precision=4,
+                unique=False,
+            )
 
-        dso.attrs["geospatial_lat_min"] = np.format_float_positional(
-            np.nanmin(dso[lat_name] if dso is l1_dso else sg_L3.latitude),
-            precision=4,
-            unique=False,
-        )
+        if "latitude" in sg_L3:
+            dso.attrs["geospatial_lat_min"] = np.format_float_positional(
+                np.nanmin(dso[lat_name] if dso is l1_dso else sg_L3.latitude),
+                precision=4,
+                unique=False,
+            )
 
-        dso.attrs["geospatial_lat_max"] = np.format_float_positional(
-            np.nanmax(dso[lat_name] if dso is l1_dso else sg_L3.latitude),
-            precision=4,
-            unique=False,
-        )
+            dso.attrs["geospatial_lat_max"] = np.format_float_positional(
+                np.nanmax(dso[lat_name] if dso is l1_dso else sg_L3.latitude),
+                precision=4,
+                unique=False,
+            )
 
         dso.attrs["time_coverage_start"] = time.strftime(
             "%Y-%m-%dT%H:%M:%SZ",
@@ -1370,10 +1454,7 @@ if __name__ == "__main__":
     except SystemExit:
         pass
     except Exception:
-        if DEBUG_PDB:
-            extype, exec_value, tb = sys.exc_info()
-            traceback.print_exc()
-            pdb.post_mortem(tb)
+        DEBUG_PDB_F()
         sys.stderr.write(f"Exception in main ({traceback.format_exc()})\n")
 
     sys.exit(retval)
