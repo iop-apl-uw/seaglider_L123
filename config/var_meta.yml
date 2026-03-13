@@ -263,7 +263,7 @@ varmeta:
       valid_min: -90.0
       valid_max: 90.0
     nc_type: f
-    decimal_pts: 4
+    decimal_pts: 5
   longitude:
     qc_name: null
     time_name: ctd_time
@@ -285,7 +285,7 @@ varmeta:
       valid_min: -180.0
       valid_max: 180.0
     nc_type: f
-    decimal_pts: 4
+    decimal_pts: 5
   z:
     despike: false
     nc_dimensions: ['z_data_point']
