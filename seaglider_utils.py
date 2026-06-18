@@ -231,7 +231,7 @@ def load_var(
     """
     if var_n not in ncf.variables:
         if logger:
-            logger.warning(f"{var_n} not in dive {ncf.variables["trajectory"][0]}")
+            logger.warning(f"{var_n} not in dive {ncf.variables['trajectory'][0]}")
         return (None, None)
     var = ncf.variables[var_n][:]
     try:

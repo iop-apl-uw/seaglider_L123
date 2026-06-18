@@ -912,6 +912,10 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
             L2_L3_conf.data_range,
         )
 
+        if ref is None or rms_ref is None:
+            logger.error("running_average_non_uniform failed")
+            continue
+
         sg_L3[f"{var_n}_ref"] = ref
         sg_L3[f"{var_n}_rms_ref"] = rms_ref
         ncf_L3_vars.append(f"{var_n}_ref")

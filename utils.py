@@ -104,7 +104,7 @@ def plot_heatmap(
     data: npt.NDArray,
     title: str,
     conf: PlotConf,
-    colorscale: str = "Viridis",
+    colorscale: str | list[list[int | float | str]] = "Viridis",
     x: npt.NDArray | None = None,
     y: npt.NDArray | None = None,
     rot90: bool = True,

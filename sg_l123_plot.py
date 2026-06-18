@@ -61,7 +61,7 @@ def DEBUG_PDB_F() -> None:
         pdb.post_mortem(traceb)
 
 
-plot_vars: Final = {
+plot_vars: dict[str, Colormap] = {
     "T": cmocean.cm.thermal,  # ty: ignore[unresolved-attribute]
     "S": cmocean.cm.haline,  # ty: ignore[unresolved-attribute]
     "P": cmocean.cm.dense,  # ty: ignore[unresolved-attribute]
