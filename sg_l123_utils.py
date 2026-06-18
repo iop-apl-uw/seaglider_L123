@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # -*- python-fmt -*-
-## Copyright (c) 2024, 2025  University of Washington.
+## Copyright (c) 2024, 2025, 2026  University of Washington.
 ##
 ## Redistribution and use in source and binary forms, with or without
 ## modification, are permitted provided that the following conditions are met:
@@ -331,7 +331,7 @@ def main() -> int:
     # conf = Conf(args.conf)
 
     logger = init_logger(
-        log_dir=pathlib.Path(".").expanduser().absolute(),
+        log_dir=pathlib.Path(".").expanduser().resolve(),
         logger_name=pathlib.Path(__file__).name,
         log_level_for_console="debug" if args.verbose else "info",
     )

@@ -88,7 +88,9 @@ select = [
     # Numpy2.0 compat
     "NPY201",
     # Docstrings - not yet
-    #"D"
+    #"D",
+    # Full annotations - not yet
+    #"ANN",
 ]
 ignore = [
   # redundant-open-modes

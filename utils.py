@@ -72,7 +72,7 @@ def init_logger(
 
     if log_dir is not None:
         # Add time stamp to log name
-        log_dir = log_dir.expanduser().absolute()
+        log_dir = log_dir.expanduser().resolve()
         if time_stamped_logfile:
             ts = time.strftime("%Y%m%d_%H%M%S", time.localtime(time.time()))
             ts = f"_{ts}"
@@ -239,10 +239,10 @@ class FullPathAction(argparse.Action):
             setattr(namespace, self.dest, "")
         elif isinstance(values, str):
             # setattr(namespace, self.dest, os.path.abspath(os.path.expanduser(values)))
-            setattr(namespace, self.dest, pathlib.Path(values).expanduser().absolute())
+            setattr(namespace, self.dest, pathlib.Path(values).expanduser().resolve())
         else:
             # setattr(namespace, self.dest, list(map(lambda y: os.path.abspath(os.path.expanduser(y)), values)))
-            setattr(namespace, self.dest, list(map(lambda y: pathlib.Path(y).expanduser().absolute(), values)))
+            setattr(namespace, self.dest, list(map(lambda y: pathlib.Path(y).expanduser().resolve(), values)))
 
 
 # Misc

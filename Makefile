@@ -25,5 +25,5 @@ testhtml:
 act:
 	-act -j check --container-daemon-socket -  --container-architecture linux/aarch64 push
 
-docs:
-	-uv run mkdocs
+doc:
+	-uv run mkdocs build
