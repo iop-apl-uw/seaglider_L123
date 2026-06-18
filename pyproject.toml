@@ -22,7 +22,7 @@ ci = [
     "pytest==8.3.3",
     "pytest-cov==6.0.0",
     ## Linting
-    "ruff==0.7.2",
+    "ruff==0.15.17",
     ## Static Typing
     #"mypy==1.13.0",
     "ty",
@@ -90,14 +90,18 @@ select = [
     # Docstrings - not yet
     #"D",
     # Full annotations - not yet
-    #"ANN",
+    "ANN",
 ]
 ignore = [
   # redundant-open-modes
   "UP015",
   # Use ternary operator
   "SIM108",
+  # Ignore types on self
+  "ANN101"
 ]
+[tool.ruff.lint.flake8-annotations]
+allow-star-arg-any = true
 # Docstrings - not yet
 [tool.ruff.lint.pydocstyle]
 convention = "google"

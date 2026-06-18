@@ -1,6 +1,6 @@
 # -*- python-fmt -*-
 
-## Copyright (c) 2024  University of Washington.
+## Copyright (c) 2024, 2026  University of Washington.
 ##
 ## Redistribution and use in source and binary forms, with or without
 ## modification, are permitted provided that the following conditions are met:
@@ -48,7 +48,7 @@ cmd_lines = [
 
 
 @pytest.mark.parametrize("cmd_line", cmd_lines)
-def test_downward(caplog, cmd_line):
+def test_downward(caplog: pytest.LogCaptureFixture, cmd_line: list[str]) -> None:
     result = sg_l123.main(cmd_line)
     assert result == 0
     for record in caplog.records:

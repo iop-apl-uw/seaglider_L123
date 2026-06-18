@@ -34,7 +34,7 @@ import pathlib
 import pdb
 import sys
 import traceback
-from typing import Any, Final, Literal
+from typing import Final, Literal
 
 import netCDF4
 import numpy as np
@@ -156,15 +156,9 @@ QC_GOOD: Final = 1  # ok
 # only_good_qc_values = [QC_GOOD, QC_PROBABLY_GOOD, QC_CHANGED]
 
 
-# def decode_qc(qc_v: ArrayLike) -> NDArray[np.float64] | float:
-def decode_qc(qc_v: Any) -> Any:
+def decode_qc(qc_v: NDArray) -> NDArray:
     """Ensure qc vector is a vector of floats."""
-    type_qc = type(qc_v)
-    if type_qc in np.ScalarType:
-        scalar = True
-    else:
-        scalar = False
-        type_qc = type(qc_v[0].item())  # get equivalent python scalar type
+    type_qc = type(qc_v[0].item())  # get equivalent python scalar type
     if nc_qc_type == "Q":
         if type_qc is float or type_qc is int:
             return qc_v
@@ -176,10 +170,7 @@ def decode_qc(qc_v: Any) -> Any:
         elif type_qc is str:
             pass  # must be from a previous setting of encode? decode below
     # if we get here, type_qv is str
-    if scalar:
-        qc_v = float(ord(qc_v[0])) - nc_qc_character_base
-    else:  # array
-        qc_v = np.array(list(map(ord, qc_v)), np.float64) - nc_qc_character_base
+    qc_v = np.array(list(map(ord, qc_v)), np.float64) - nc_qc_character_base
     return qc_v
 
 

@@ -1170,8 +1170,8 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
 
     def type_mapper(
         nc_type: Literal["b", "s", "f", "d"],
-    ) -> Any:
-        mapping_dict = {
+    ) -> type[np.integer | np.floating]:
+        mapping_dict: dict[str, type[np.integer | np.floating]] = {
             "b": np.int8,
             "s": np.int16,
             "f": np.float32,

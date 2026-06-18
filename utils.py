@@ -1,5 +1,5 @@
 # -*- python-fmt -*-
-## Copyright (c) 2024  University of Washington.
+## Copyright (c) 2024, 2026  University of Washington.
 ##
 ## Redistribution and use in source and binary forms, with or without
 ## modification, are permitted provided that the following conditions are met:
@@ -37,6 +37,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 import plotly.graph_objects
 
 import utils
@@ -100,15 +101,15 @@ class PlotConf:
 
 
 def plot_heatmap(
-    data: Any,
+    data: npt.NDArray,
     title: str,
     conf: PlotConf,
-    colorscale: str | list[Any] = "Viridis",
-    x: Any = None,
-    y: Any = None,
+    colorscale: str = "Viridis",
+    x: npt.NDArray | None = None,
+    y: npt.NDArray | None = None,
     rot90: bool = True,
     annotation: str | None = None,
-    layout: Any = None,
+    layout: dict | None = None,
     hovertemplate: str | None = None,
     output_name: str | None = None,
     trim_zrange: float = 1.0,
@@ -223,7 +224,7 @@ def plot_heatmap(
 
 
 class FullPathAction(argparse.Action):
-    def __init__(self, option_strings: Any, dest: Any, nargs: Any = None, **kwargs: Any) -> None:
+    def __init__(self, option_strings: Sequence[str], dest: str, nargs: str | int | None = None, **kwargs: Any) -> None:
         # if nargs is not None:
         #    raise ValueError("nargs not allowed")
         super().__init__(option_strings, dest, **kwargs)
