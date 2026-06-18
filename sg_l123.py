@@ -571,6 +571,9 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
     # half profiles and applying QC
     for dive_nc in dive_ncfs:
         ncf = open_netcdf_file(dive_nc, logger=logger)
+        if ncf is None:
+            logger.error("Unable to open {dive_nc} - skipping")
+            continue
 
         if dive_nc.suffix == ".ncdf":
             remap_ncfd_vars(ncf, dive_nc, logger)
