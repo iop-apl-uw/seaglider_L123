@@ -349,7 +349,7 @@ def main() -> int:
     # conf = Conf(args.conf)
 
     logger = init_logger(
-        log_dir=pathlib.Path(".").expanduser().resolve(),
+        log_dir=pathlib.Path.cwd().resolve(),
         logger_name=pathlib.Path(__file__).name,
         log_level_for_console="debug" if args.verbose else "info",
     )

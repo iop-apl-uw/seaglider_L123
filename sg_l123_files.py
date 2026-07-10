@@ -100,7 +100,7 @@ def load_mission_meta(
     Returns:
         Validation all exceptions caught and converted to return (None,None)
     """
-    with open(mission_meta_filename, "r") as fi:
+    with mission_meta_filename.open("r") as fi:
         mission_dict = yaml.safe_load(fi)
 
     for k in ("processing_config", "global_attributes"):
@@ -233,7 +233,7 @@ def load_instrument_metadata(
         if filename is None:
             continue
         try:
-            with open(filename, "r") as fi:
+            with filename.open("r") as fi:
                 orig = yaml.safe_load(fi)
             for section, accum, model in (
                 ("varmeta", L2_L3_var_meta, NCVarMeta),

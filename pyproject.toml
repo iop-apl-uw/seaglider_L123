@@ -66,6 +66,8 @@ select = [
     "D",
     # Full annotations - not yet
     "ANN",
+    # Require pathlib
+    "PTH",
 ]
 ignore = [
   # redundant-open-modes

@@ -29,7 +29,6 @@
 """Seaglider specific utility routines."""
 
 import logging
-import os
 import pathlib
 import pdb
 import sys
@@ -133,8 +132,7 @@ def dive_number(ncf_name: pathlib.Path) -> int:
 
     """
     try:
-        _, tail = os.path.split(ncf_name)
-        return int(tail[4:8])
+        return int(ncf_name.name[4:8])
     except Exception:
         return -1
 
