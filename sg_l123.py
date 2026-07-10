@@ -105,7 +105,7 @@ def fix_attr_type(data_type: type, attrs: dict[str, Any]) -> dict[str, Any]:
     """
     new_attrs = {}
     for k, v in attrs.items():
-        if isinstance(type(v), int):
+        if isinstance(v, int):
             new_attrs[k] = data_type(v)
         elif k == "flag_values":
             new_attrs[k] = [data_type(li) for li in v]
@@ -190,6 +190,8 @@ def remap_ncfd_vars(
         ncf.variables["latitude"][0, :] = np.float64(ncf.variables["log_GPS"][1])
         ncf.variables["longitude"][0, :] = np.float64(ncf.variables["log_GPS"][2])
 
+    return ncf
+
     # CONSIDER - propagate time to all slots in time vector
 
     # This is the place to check for and adjust positions based on look aside position table
@@ -229,8 +231,9 @@ def inventory_vars(
             continue
 
         if dive_ncf.suffix == ".ncdf":
-            remap_ncfd_vars(ncf, dive_ncf, logger)
+            ncf = remap_ncfd_vars(ncf, dive_ncf, logger)
             if ncf is None:
+                logger.warning(f"Skipping {dive_ncf}")
                 continue
 
         if "processing_error" in ncf.variables:
@@ -253,7 +256,7 @@ def inventory_vars(
                 if var_dict[vv].nc_L1_dimensions:
                     l1_profile_vars.append(vv)
 
-        if not platform_specific_attribs:
+        if not platform_specific_attribs:  # pragma: no branch
             for attrib in platform_specific_attribs_list:
                 # if attrib in ncf._attributes:
                 # if isinstance(ncf._attributes[attrib], bytes):
@@ -590,11 +593,10 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
             continue
 
         if dive_nc.suffix == ".ncdf":
-            remap_ncfd_vars(ncf, dive_nc, logger)
-
-        if ncf is None:
-            logger.warning(f"Skipping {dive_nc}")
-            continue
+            ncf = remap_ncfd_vars(ncf, dive_nc, logger)
+            if ncf is None:
+                logger.warning(f"Skipping {dive_nc}")
+                continue
 
         # Alert to any processing issues
         if "processing_error" in ncf.variables:
@@ -897,7 +899,7 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
                     if l2_var_np is not None:
                         l2_var_np[ii * 2 + 1, :] = num_pts
 
-    if plot_conf.do_plots:
+    if plot_conf.do_plots:  # pragma: no cover
         for var_n in L2_L3_vars:
             # plot_heatmap(np.rot90(getattr(sg_L1, var_n)), f"L1 {var_n}")
             plot_heatmap(sg_L2[var_n], f"L2 {var_n}", plot_conf)
@@ -935,7 +937,7 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
         ncf_L3_vars.append(f"{var_n}_ref")
         ncf_L3_vars.append(f"{var_n}_rms_ref")
 
-        if plot_conf.do_plots_detailed:
+        if plot_conf.do_plots_detailed:  # pragma: no cover
             plot_heatmap(ref, f"{var_n} _ref", plot_conf)
             plot_heatmap(rms_ref, f"{var_n} rms ref", plot_conf)
 
@@ -1033,7 +1035,7 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
 
             # setattr(sg_L3, var_n, L3_var)
 
-    if plot_conf.do_plots:
+    if plot_conf.do_plots:  # pragma: no cover
         for var_n in L2_L3_vars:
             var_met = L2_L3_var_meta[var_n]
             if var_met.despike:
@@ -1059,7 +1061,7 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
             flags[np.isfinite(L2_var) & np.isfinite(L3_var)] = QualityFlags.good
             sg_L3[f"{var_n}_flags"] = flags
             ncf_L3_vars.append(f"{var_n}_flags")
-            if plot_conf.do_plots_detailed:
+            if plot_conf.do_plots_detailed:  # pragma: no cover
                 plot_heatmap(sg_L3[f"{var_n}_flags"], f"L3_{var_n}_flags", plot_conf)
         else:
             # if no despiking - all data considered good
@@ -1090,7 +1092,7 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
             )
     sg_L3["time"] = L3_time
 
-    if plot_conf.do_plots:
+    if plot_conf.do_plots:  # pragma: no cover
         plot_heatmap(sg_L3.time, "L3 time", plot_conf)
 
     if np.std(np.diff(sg_L3.z)) == 0.0:
@@ -1115,14 +1117,14 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
 
         var_flags = sg_L3[f"{var_n}_flags"]
         tmp_flags = np.ones(np.shape(var_flags)) * (var_flags == QualityFlags.good)
-        if plot_conf.do_plots:
+        if plot_conf.do_plots:  # pragma: no cover
             plot_heatmap(tmp_flags, f"{var_n} tmp_flags", plot_conf)
         # var_mask = np.empty(np.shape(tmp_flags))
 
         var_mask = signal.convolve(tmp_flags, gap_array, mode="same", method="direct")
         var_mask[var_mask > 0] = 1.0
         var_mask[var_mask <= 0.0] = np.nan
-        if plot_conf.do_plots:
+        if plot_conf.do_plots:  # pragma: no cover
             plot_heatmap(var_mask, f"{var_n} var_mask", plot_conf)
 
         sg_L3[f"{var_n}_mask"] = var_mask
@@ -1149,11 +1151,11 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
             if len(jj) > 2:
                 var_interp[ii, :] = interp1(sg_L3.z[jj], var[ii, jj], sg_L3.z)
 
-        if plot_conf.do_plots:
+        if plot_conf.do_plots:  # pragma: no cover
             plot_heatmap(var_interp, f"{var_n} L3 interpolation before mask", plot_conf)
 
         var_interp *= var_mask
-        if plot_conf.do_plots:
+        if plot_conf.do_plots:  # pragma: no cover
             plot_heatmap(var_interp, f"{var_n} L3 interpolation", plot_conf)
         sg_L3[f"{var_n}"] = var_interp
 

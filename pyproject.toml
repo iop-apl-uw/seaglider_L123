@@ -24,7 +24,6 @@ ci = [
     ## Linting
     "ruff==0.15.17",
     ## Static Typing
-    #"mypy==1.13.0",
     "ty==0.0.32",
     "types-PyYAML",
 ]
@@ -37,30 +36,6 @@ dev = [
     "ipython",
     "flynt",
 ]
-# [tool.mypy]
-# plugins = ['numpy.typing.mypy_plugin', 'pydantic.mypy']
-# # This only applies to the basestation extension being checked
-# mypy_path = '..'
-# files = ['sg_l123.py','sg_l123_plot.py', 'sg_l123_utils.py', 'sg_l123_files.py', 'utils.py', 'seaglider_utils.py']
-# strict = true
-# disable_error_code = ['attr-defined']
-
-# Much of the numerical computing stack doesn't have type annotations yet.
-# [[tool.mypy.overrides]]
-# ignore_missing_imports = true
-# module = [
-#     "gsw.*",
-#     "seawater.*",
-#     "netCDF4.*",
-#     "scipy.*",
-#     "plotly.*",
-#     "cmocean.*",
-#     "isodate.*",
-# ]
-
-#[tool.pytest]
-# To enable live logging during tests
-#log_cli = true
 
 [tool.pytest.ini_options]
 pythonpath = "."
@@ -103,3 +78,13 @@ allow-star-arg-any = true
 suppress-dummy-args = true
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "*/config/*"
+]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 85

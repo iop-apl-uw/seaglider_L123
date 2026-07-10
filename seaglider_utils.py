@@ -107,7 +107,7 @@ def collect_dive_ncfiles(mission_dir: pathlib.Path) -> list[pathlib.Path]:
         glider_id = int(dive_files[-1].name[1:4])
     elif ncdf_files:
         glider_id = int(ncdf_files[-1].name[1:4])
-    else:
+    else:  # pragma: no cover
         return []
 
     merged_files = []
@@ -208,7 +208,7 @@ def load_var(
     var_qc_n: str | None,
     var_time_n: str | None,
     truck_time_n: str | None,
-    var_depth_n: str,
+    var_depth_n: str | None,
     master_time_n: str,
     master_depth_n: str,
     logger: logging.Logger | None = None,
@@ -277,12 +277,12 @@ def load_var(
             )
     except Exception as exception:
         raise exception
-        _, __, traceb = sys.exc_info()
-        traceback.print_exc()
-        pdb.post_mortem(traceb)
-        if logger:
+        _, __, traceb = sys.exc_info()  # pragma: no cover
+        traceback.print_exc()  # pragma: no cover
+        pdb.post_mortem(traceb)  # pragma: no cover
+        if logger:  # pragma: no cover
             logger.error(f"Could not load {var_n} {traceback.format_exc()}")
-        return (None, None)
+        return (None, None)  # pragma: no cover
     return (var, depth)
 
 

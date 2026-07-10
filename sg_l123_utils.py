@@ -379,7 +379,7 @@ if __name__ == "__main__":
     try:
         retval = main()
     except Exception:
-        if DEBUG_PDB:
+        if DEBUG_PDB:  # pragma: no cover
             extype, exec_value, tb = sys.exc_info()
             traceback.print_exc()
             pdb.post_mortem(tb)
