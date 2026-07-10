@@ -1,5 +1,5 @@
 # -*- python-fmt -*-
-## Copyright (c) 2023, 2024, 2025  University of Washington.
+## Copyright (c) 2023, 2024, 2025, 2026  University of Washington.
 ##
 ## Redistribution and use in source and binary forms, with or without
 ## modification, are permitted provided that the following conditions are met:
@@ -127,23 +127,23 @@ def load_mission_meta(
 class NCDataType(enum.Enum):
     """netCDF variable type codes used in var_meta.yml."""
 
-    f: str = "f"
-    d: str = "d"
-    i: str = "i"
-    s: str = "s"
-    b: str = "b"
+    f = "f"
+    d = "d"
+    i = "i"
+    s = "s"
+    b = "b"
 
 
 # Models for var_meta.yml file contents
 class NCCoverageContentType(enum.Enum):
     """Allowed values for a netCDF variable's coverage_content_type attribute."""
 
-    physicalMeasurement: str = "physicalMeasurement"
-    coordinate: str = "coordinate"
-    modelResult: str = "modelResult"
-    auxiliaryInformation: str = "auxiliaryInformation"
-    qualityInformation: str = "qualityInformation"
-    referenceInformation: str = "referenceInformation"
+    physicalMeasurement = "physicalMeasurement"
+    coordinate = "coordinate"
+    modelResult = "modelResult"
+    auxiliaryInformation = "auxiliaryInformation"
+    qualityInformation = "qualityInformation"
+    referenceInformation = "referenceInformation"
 
 
 class NCAttribs(BaseModel):
