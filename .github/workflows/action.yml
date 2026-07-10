@@ -29,11 +29,11 @@ jobs:
 
     - name: Check with Ruff
       run: |
-        uv run ruff check --output-format=github
+        uv run ruff check --output-format github
 
     - name: Check with ty
       run: |
-        uv run ty check --output-format
+        uv run ty check --output-format github
 
     - name: Test with pytest
       run: |

@@ -34,7 +34,7 @@ attributes to be edited for your dataset.
 
 # Running
 
-```uv run seaglider_L123.py [-h] [--verbose] --profile_dir PROFILE_DIR --L123_dir L123_DIR --base_name BASE_NAME [--var_meta VAR_META] --mission_meta MISSION_META```
+```uv run sg_l123.py [-h] [--verbose] --profile_dir PROFILE_DIR --L123_dir L123_DIR --base_name BASE_NAME [--var_meta VAR_META] --mission_meta MISSION_META [--instrument_meta INSTRUMENT_META] [--debug_pdb | --no-debug_pdb] [--skip_processing_errors | --no-skip_processing_errors] [--do_plots | --no-do_plots] [--do_plots_detailed | --no-do_plots_detailed] [--interactive | --no-interactive]```
 
 where
 
@@ -43,4 +43,39 @@ where
 - ```--base_name``` is the name of the mission - ```sg249_NANOOS_Apr24``` for examples
 - ```--mission_meta``` is the path to you copy of the ```mission_meta.yml``` file
 - ```--var_meta``` is the optional path to an updated version of ```var_meta.yml``` (if extra instruments have been added, or the core metadata adjusted)
+- ```--instrument_meta``` is an optional path to instrument-specific metadata, for instruments not covered in ```var_meta.yml```
+- ```--debug_pdb``` drops into the debugger on selected exceptions (default off)
+- ```--skip_processing_errors``` skips per-dive netCDF files flagged as having processing errors (default on)
+- ```--do_plots``` generates diagnostic plots of the L2/L3 processing (default off)
+- ```--do_plots_detailed``` generates more detailed diagnostic plots (default off)
+- ```--interactive``` opens generated plots in a browser as they're created, rather than only writing them to disk (default off)
+
+# Plotting
+
+Once L2/L3 processing has completed, ```sg_l123_plot.py``` generates heatmap and position plots from the
+output netCDF files:
+
+```uv run sg_l123_plot.py [-h] [--verbose] --L123_dir L123_DIR --base_name BASE_NAME [--plot_contour] [--plot_webp] [--debug_pdb | --no-debug_pdb] [--interactive | --no-interactive]```
+
+where
+
+- ```--L123_dir``` is the location of the L1/L2/L3 netCDF files produced by ```sg_l123.py```
+- ```--base_name``` is the same mission base name used when running ```sg_l123.py```
+- ```--plot_contour``` plots contours instead of heatmaps
+- ```--plot_webp``` additionally writes a ```.webp``` image alongside each html plot
+- ```--interactive``` opens generated plots in a browser as they're created
+
+Plots are written to a ```plots``` subdirectory of ```--L123_dir```.
+
+# Development
+
+Install the testing and linting dependencies with:
+
+```uv sync --extra ci```
+
+- Run the test suite with coverage: ```uv run pytest --cov --cov-report=term-missing tests/``` (or ```make test```)
+- Lint: ```uv run ruff check --fix``` (or ```make rufflint```)
+- Type check: ```uv run ty check``` (or ```make typecheck```)
+
+Minimum test coverage is enforced at 85% project-wide (see ```pyproject.toml```).
 
