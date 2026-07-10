@@ -76,7 +76,7 @@ DEBUG_PDB = False
 
 
 def DEBUG_PDB_F() -> None:
-    """Enter the debugger on exceptions"""
+    """Enter the debugger on exceptions."""
     if DEBUG_PDB:
         _, __, traceb = sys.exc_info()
         traceback.print_exc()
@@ -152,6 +152,20 @@ class Seaglider_L1_L2_L3(AttributeDict):
 def remap_ncfd_vars(
     ncf: netCDF4.Dataset, ncf_file_name: pathlib.Path, logger: logging.Logger
 ) -> netCDF4.Dataset | None:
+    """Remaps legacy .ncdf profile variables to the naming convention used by per-dive .nc files.
+
+    Renames "depth"/"time" to "ctd_depth"/"ctd_time" and populates latitude/longitude
+    from the log_GPS variable, in place on the given dataset.
+
+    Args:
+        ncf: netcdf file object to remap, mutated in place
+        ncf_file_name: filename of ncf, used for logging
+        logger: logging object for reporting problems
+
+    Returns:
+        None on failure (invalid or missing required variables); otherwise mutates ncf in place
+        and the return value is not used by callers.
+    """
     # These are profiles, with a single value for time at the start of the profile
     if "time" not in ncf.variables:
         return None
@@ -1175,6 +1189,14 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
     def type_mapper(
         nc_type: Literal["b", "s", "f", "d"],
     ) -> type[np.integer | np.floating]:
+        """Maps a netCDF type character to the corresponding numpy scalar type.
+
+        Args:
+            nc_type: netCDF type character ("b", "s", "f", or "d")
+
+        Returns:
+            The numpy type corresponding to nc_type, or np.float64 if nc_type is unrecognized.
+        """
         mapping_dict: dict[str, type[np.integer | np.floating]] = {
             "b": np.int8,
             "s": np.int16,
@@ -1195,6 +1217,22 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
         var_met_alt: AttributeDict | None = None,
         is_instrument: bool = False,
     ) -> None:
+        """Builds a DataArray for var_n from sg_ll and adds it to dso.
+
+        Args:
+            var_n: name of the variable to add
+            dso: output xarray Dataset to add the variable to
+            sg_ll: data holder (Seaglider_L1_L2_L3) containing the variable's data, or the raw
+                data itself when is_instrument is True
+            level_value: processing level, one of "L1", "L2", or "L3", used for attribute
+                selection and logging
+            var_met_alt: metadata to use instead of looking up var_n in L2_L3_var_meta
+            is_instrument: True if sg_ll is the raw instrument data rather than a
+                Seaglider_L1_L2_L3 holder
+
+        Returns:
+            None. Mutates dso in place by adding the variable.
+        """
         # if var_n == "latitude":
         #    pdb.set_trace()
         if var_met_alt is None:

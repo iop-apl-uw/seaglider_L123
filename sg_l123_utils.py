@@ -27,7 +27,7 @@
 ## LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 ## OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Utilities to support Seaglider L2 and L3 data processing"""
+"""Utilities to support Seaglider L2 and L3 data processing."""
 
 import argparse
 import pathlib
@@ -52,9 +52,17 @@ def interp1(
     assume_sorted: bool = False,
     extrapolate: bool = False,
 ) -> NDArray[np.float64]:
-    """
-    Interpolates to find Vq, the values of the
-    underlying function V=F(X) at the query points Xq.
+    """Interpolates to find Vq, the values of the underlying function V=F(X) at the query points Xq.
+
+    Args:
+        X: 1-d array of original x values
+        V: 1-d array of data to interpolate (must be the same size as X)
+        Xq: 1-d array of query x values
+        assume_sorted: True if X is already monotonically increasing, avoiding a re-sort
+        extrapolate: True to extrapolate beyond the range of X; False fills with NaN
+
+    Returns:
+        Interpolated values Vq at the query points Xq.
     """
     # fill_value="extrapolate" - not appropriate
     # do like matlab here and fill with nan
@@ -85,16 +93,18 @@ def running_average_non_uniform(
     ]
     | tuple[None, None, None]
 ):
-    """Calculates the average and standard deviation over data, using only the
-    middle FF percentage of the data set.
+    """Calculates the average and standard deviation over data.
 
-    Input:
+    Uses only the middle FF percentage of the data set.
+
+    Args:
         x: m x n (or one-d m) array describing the x-axis of the data (typically time)
         y: m x n (or one-d n) array describing the y-axis of the data (typically depth)
         data: m x n array of the data
-        dx: length of the running average along the x axis in units of x
-        dy: length of the running average along the x axis in units of y
-        ff: middle percentage of data to be considered
+        DX: length of the running average along the x axis in units of x
+        DY: length of the running average along the x axis in units of y
+        FF: middle percentage of data to be considered
+        plot_conf: Optional plotting configuration; when provided, diagnostic heatmaps are generated
 
     Returns:
         x_ref, y_ref: regular x and y axis
@@ -256,12 +266,12 @@ def running_average_non_uniform(
 def bindata(
     x: NDArray[np.float64], y: NDArray[np.float64], bins: NDArray[np.float64], sigma: bool = False
 ) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64] | None]:
-    """
-    Bins y(x) onto bins by averaging, when bins define the right hand side of the bin
+    """Bins y(x) onto bins by averaging, when bins define the right hand side of the bin.
+
     NaNs are ignored.  Values less then bin[0] LHS are included in bin[0],
     values greater then bin[-1] RHS are included in bin[-1]
 
-    Input:
+    Args:
         x: values to be binned
         y: data upon which the averaging will be calculated
         bins: right hand side of the bins
@@ -306,7 +316,15 @@ def bindata(
 
 
 def find_gaps(gap_vector: NDArray[np.float64], data: NDArray[np.float64]) -> NDArray[np.float64]:
-    """Cheezy solution to locating gaps in data."""
+    """Cheezy solution to locating gaps in data.
+
+    Args:
+        gap_vector: convolution kernel used to detect a gap of the desired width
+        data: 1-d array of data to search for gaps
+
+    Returns:
+        Convolution of data with gap_vector, trimmed back to the size of data.
+    """
     head = len(gap_vector) // 2
 
     c: NDArray[np.float64] = signal.convolve(data, gap_vector)
@@ -316,7 +334,7 @@ def find_gaps(gap_vector: NDArray[np.float64], data: NDArray[np.float64]) -> NDA
 
 
 def main() -> int:
-    """Main entry point for testing"""
+    """Main entry point for testing."""
     ap = argparse.ArgumentParser(description=__doc__)
     # Add verbosity arguments
 

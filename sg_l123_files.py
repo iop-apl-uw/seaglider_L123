@@ -69,7 +69,7 @@ class ProcessingConfig:
 
 
 class GlobalAttributes(BaseModel):
-    """Global attributes for output netcdf file as defined in the config files"""
+    """Global attributes for output netcdf file as defined in the config files."""
 
     time_coverage_resolution: str = field(default="PT1S")
     # TODO - add in the remaining required fields
@@ -79,7 +79,7 @@ class GlobalAttributes(BaseModel):
 
 
 class MissionModel(BaseModel):
-    """Pydanitc model for overall config file"""
+    """Pydanitc model for overall config file."""
 
     processing_config: ProcessingConfig | None
     global_attributes: GlobalAttributes | None
@@ -125,6 +125,8 @@ def load_mission_meta(
 
 
 class NCDataType(enum.Enum):
+    """netCDF variable type codes used in var_meta.yml."""
+
     f: str = "f"
     d: str = "d"
     i: str = "i"
@@ -134,6 +136,8 @@ class NCDataType(enum.Enum):
 
 # Models for var_meta.yml file contents
 class NCCoverageContentType(enum.Enum):
+    """Allowed values for a netCDF variable's coverage_content_type attribute."""
+
     physicalMeasurement: str = "physicalMeasurement"
     coordinate: str = "coordinate"
     modelResult: str = "modelResult"
@@ -143,6 +147,8 @@ class NCCoverageContentType(enum.Enum):
 
 
 class NCAttribs(BaseModel):
+    """Pydantic model for the netCDF attributes of a single L2/L3 variable."""
+
     FillValue: float | None = None
     description: StrictStr | None = None
     l1: StrictStr | None = None
@@ -161,6 +167,8 @@ class NCAttribs(BaseModel):
 
 
 class NCVarMeta(BaseModel):
+    """Pydantic model for a single entry in the var_meta.yml "varmeta" section."""
+
     qc_name: StrictStr | None = None
     time_name: StrictStr | None = None
     truck_time_name: StrictStr | None = None
@@ -178,6 +186,8 @@ class NCVarMeta(BaseModel):
 
 
 class NCVarAttribs(BaseModel):
+    """Pydantic model for the netCDF attributes of an instrument-level variable."""
+
     FillValue: float | None = None
     make_model: StrictStr
     coverage_content_type: NCCoverageContentType
@@ -185,6 +195,8 @@ class NCVarAttribs(BaseModel):
 
 
 class NCVar(BaseModel):
+    """Pydantic model for a single entry in the instrument metadata "variables" section."""
+
     data: StrictInt
     nc_varname: StrictStr
     nc_dimensions: list[StrictStr] | None = None
@@ -198,6 +210,23 @@ class NCVar(BaseModel):
 def load_instrument_metadata(
     var_meta_filename: pathlib.Path, instrument_meta_filename: pathlib.Path, logger: logging.Logger
 ) -> tuple[dict[str, AttributeDict], dict[str, AttributeDict]]:
+    """Loads and validates variable and instrument metadata from yaml configuration files.
+
+    Reads the "varmeta" section of var_meta_filename and the "variables" section of
+    instrument_meta_filename, validating each entry against NCVarMeta and NCVar
+    respectively. Entries that fail validation are logged and skipped rather than
+    causing the whole load to fail.
+
+    Args:
+        var_meta_filename: Fully qualified path to the variable metadata yml file
+        instrument_meta_filename: Fully qualified path to the instrument metadata yml file,
+            or None to skip loading instrument metadata
+        logger: logger object for error logging
+
+    Returns:
+        L2_L3_var_meta: dict mapping variable name to its validated metadata
+        additional_variables: dict mapping instrument variable name to its validated metadata
+    """
     L2_L3_var_meta: dict[str, AttributeDict] = {}
     additional_variables: dict[str, AttributeDict] = {}
     for filename in (var_meta_filename, instrument_meta_filename):

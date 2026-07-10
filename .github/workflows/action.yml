@@ -31,9 +31,9 @@ jobs:
       run: |
         uv run ruff check --output-format=github
 
-    - name: Check with uv
+    - name: Check with ty
       run: |
-        uv run ty check
+        uv run ty check --output-format
 
     - name: Test with pytest
       run: |

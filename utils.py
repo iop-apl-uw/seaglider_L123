@@ -26,7 +26,7 @@
 ## LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 ## OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""General utility routines"""
+"""General utility routines."""
 
 import argparse
 import logging
@@ -52,8 +52,17 @@ def init_logger(
     logger_name: str = "default_logger",
     time_stamped_logfile: bool = True,
 ) -> logging.Logger:
-    """Sets up console logging and if requested file logging
-    Returns: logger object
+    """Sets up console logging and, if requested, file logging.
+
+    Args:
+        log_level_for_console: minimum log level to emit to the console
+        log_level_for_file: minimum log level to emit to the log file
+        log_dir: directory to write the log file to, or None to skip file logging
+        logger_name: name of the logger, and base name for the log file
+        time_stamped_logfile: True to append a timestamp to the log file name
+
+    Returns:
+        Configured logger object.
     """
     logger = logging.getLogger(logger_name)
     logger.setLevel(level=logging.DEBUG)
@@ -93,7 +102,7 @@ def init_logger(
 
 @dataclass
 class PlotConf:
-    """Quick replacement for the conf processing"""
+    """Quick replacement for the conf processing."""
 
     do_plots: bool  # Geenerate main plots
     do_plots_detailed: bool  # Generate detailed plots
@@ -116,6 +125,27 @@ def plot_heatmap(
     f_contour: bool = False,
     f_webp: bool = False,
 ) -> None:
+    """Renders data as a plotly heatmap (or contour plot) and writes it to an html file.
+
+    Args:
+        data: 2-d array of values to plot
+        title: plot title, also used to derive the output filename when output_name is None
+        conf: plotting configuration (whether to open the plot interactively)
+        colorscale: plotly colorscale name, or an explicit colorscale list
+        x: values for the x axis; defaults to array indices when None
+        y: values for the y axis; defaults to array indices when None
+        rot90: True to rotate data 90 degrees before plotting
+        annotation: Optional text annotation to add below the plot
+        layout: Optional dict of plotly layout overrides
+        hovertemplate: Optional plotly hover template string
+        output_name: Output html file path; defaults to a sanitized version of title
+        trim_zrange: fraction of the z data range to display, trimming outliers symmetrically
+        f_contour: True to plot a contour plot instead of a heatmap
+        f_webp: True to additionally write a webp image of the plot
+
+    Returns:
+        None. Writes the plot to output_name (and a matching .webp file if f_webp is True).
+    """
     std_config_dict = {
         "modeBarButtonsToRemove": ["lasso2d", "select2d"],
         "scrollZoom": True,
@@ -224,7 +254,20 @@ def plot_heatmap(
 
 
 class FullPathAction(argparse.Action):
+    """Argparse action that expands and resolves path argument(s) to a fully qualified pathlib.Path."""
+
     def __init__(self, option_strings: Sequence[str], dest: str, nargs: str | int | None = None, **kwargs: Any) -> None:
+        """Initializes the action.
+
+        Args:
+            option_strings: option strings associated with this action (e.g. ["--foo"])
+            dest: attribute name to store the resolved path(s) under
+            nargs: number of command-line arguments to consume
+            **kwargs: additional keyword arguments passed through to argparse.Action
+
+        Returns:
+            None.
+        """
         # if nargs is not None:
         #    raise ValueError("nargs not allowed")
         super().__init__(option_strings, dest, **kwargs)
@@ -236,6 +279,17 @@ class FullPathAction(argparse.Action):
         values: str | Sequence[Any] | None,
         option_string: str | None = None,
     ) -> None:
+        """Resolves values to fully qualified pathlib.Path object(s) and stores them on namespace.
+
+        Args:
+            parser: the ArgumentParser invoking this action
+            namespace: namespace to store the resolved path(s) on
+            values: raw argument value(s) - a single path string, a sequence of path strings, or None
+            option_string: the option string that was used to invoke this action
+
+        Returns:
+            None. Sets the dest attribute on namespace.
+        """
         if values == "" or values is None:
             setattr(namespace, self.dest, "")
         elif isinstance(values, str):
@@ -250,22 +304,19 @@ class FullPathAction(argparse.Action):
 
 
 def ensure_basename(basename: str) -> str:
-    """Returns basename with problematic filename characters replaced
+    """Returns basename with problematic filename characters replaced.
 
-    Inputs:
-    basename - string
+    Args:
+        basename: candidate filename
 
     Returns:
-    basename possibly modified
-
-    Raises:
-    None
+        basename, with spaces, commas, slashes, and ampersands replaced by underscores.
     """
     return basename.replace(" ", "_").replace(",", "_").replace("/", "_").replace("&", "_")
 
 
 class AttributeDict(dict[Any, Any]):
-    """Allow dot access for dictionaries"""
+    """Allow dot access for dictionaries."""
 
     __getattr__ = dict.__getitem__
     __setattr__: Any = dict.__setitem__

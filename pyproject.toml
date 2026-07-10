@@ -25,7 +25,7 @@ ci = [
     "ruff==0.15.17",
     ## Static Typing
     #"mypy==1.13.0",
-    "ty",
+    "ty==0.0.32",
     "types-PyYAML",
 ]
 dev = [
@@ -37,26 +37,26 @@ dev = [
     "ipython",
     "flynt",
 ]
-[tool.mypy]
-plugins = ['numpy.typing.mypy_plugin', 'pydantic.mypy']
-# This only applies to the basestation extension being checked
-mypy_path = '..'
-files = ['sg_l123.py','sg_l123_plot.py', 'sg_l123_utils.py', 'sg_l123_files.py', 'utils.py', 'seaglider_utils.py']
-strict = true
-disable_error_code = ['attr-defined']
+# [tool.mypy]
+# plugins = ['numpy.typing.mypy_plugin', 'pydantic.mypy']
+# # This only applies to the basestation extension being checked
+# mypy_path = '..'
+# files = ['sg_l123.py','sg_l123_plot.py', 'sg_l123_utils.py', 'sg_l123_files.py', 'utils.py', 'seaglider_utils.py']
+# strict = true
+# disable_error_code = ['attr-defined']
 
 # Much of the numerical computing stack doesn't have type annotations yet.
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = [
-    "gsw.*",
-    "seawater.*",
-    "netCDF4.*",
-    "scipy.*",
-    "plotly.*",
-    "cmocean.*",
-    "isodate.*",
-]
+# [[tool.mypy.overrides]]
+# ignore_missing_imports = true
+# module = [
+#     "gsw.*",
+#     "seawater.*",
+#     "netCDF4.*",
+#     "scipy.*",
+#     "plotly.*",
+#     "cmocean.*",
+#     "isodate.*",
+# ]
 
 #[tool.pytest]
 # To enable live logging during tests
@@ -88,7 +88,7 @@ select = [
     # Numpy2.0 compat
     "NPY201",
     # Docstrings - not yet
-    #"D",
+    "D",
     # Full annotations - not yet
     "ANN",
 ]
@@ -100,6 +100,6 @@ ignore = [
 ]
 [tool.ruff.lint.flake8-annotations]
 allow-star-arg-any = true
-# Docstrings - not yet
+suppress-dummy-args = true
 [tool.ruff.lint.pydocstyle]
 convention = "google"

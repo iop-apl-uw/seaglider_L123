@@ -157,7 +157,14 @@ QC_GOOD: Final = 1  # ok
 
 
 def decode_qc(qc_v: NDArray) -> NDArray:
-    """Ensure qc vector is a vector of floats."""
+    """Ensure qc vector is a vector of floats.
+
+    Args:
+        qc_v: QC array, either already numeric or encoded as QC characters.
+
+    Returns:
+        QC array coerced to floats.
+    """
     type_qc = type(qc_v[0].item())  # get equivalent python scalar type
     if nc_qc_type == "Q":
         if type_qc is float or type_qc is int:

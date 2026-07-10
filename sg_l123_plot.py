@@ -27,7 +27,7 @@
 ## LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
 ## OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""L2 and L3 utility routines"""
+"""L2 and L3 utility routines."""
 
 import argparse
 import pathlib
@@ -54,7 +54,7 @@ DEBUG_PDB = False
 
 
 def DEBUG_PDB_F() -> None:
-    """Enter the debugger on exceptions"""
+    """Enter the debugger on exceptions."""
     if DEBUG_PDB:
         _, __, traceb = sys.exc_info()
         traceback.print_exc()
@@ -93,7 +93,15 @@ plot_dives: Final = True
 
 
 def cmocean_to_plotly(cmap: Colormap, pl_entries: int) -> list[list[float | str]]:
-    """Convert cmocean to plotly colorscale"""
+    """Converts a cmocean/matplotlib colormap to a plotly colorscale.
+
+    Args:
+        cmap: matplotlib Colormap to convert
+        pl_entries: number of discrete color entries to sample from cmap
+
+    Returns:
+        A plotly colorscale: a list of [position, "rgb(r,g,b)"] pairs.
+    """
     h = 1.0 / (pl_entries - 1)
     pl_colorscale: list[list[Any]] = []
 
@@ -105,7 +113,7 @@ def cmocean_to_plotly(cmap: Colormap, pl_entries: int) -> list[list[float | str]
 
 
 def main() -> None:
-    """Main cmdline entry point"""
+    """Main cmdline entry point."""
     ap = argparse.ArgumentParser(description=__doc__)
     # Add verbosity arguments
 
