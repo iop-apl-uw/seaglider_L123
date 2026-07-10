@@ -42,7 +42,7 @@ from numpy.typing import NDArray
 from scipy import signal
 from scipy.stats import binned_statistic
 
-from utils import PlotConf, init_logger, plot_heatmap
+from utils import init_logger, plot_heatmap
 
 
 def interp1(
@@ -84,7 +84,7 @@ def running_average_non_uniform(
     DX: int | float,
     DY: int | float,
     FF: float,
-    plot_conf: PlotConf | None = None,
+    args: argparse.Namespace | None = None,
 ) -> (
     tuple[
         NDArray[np.float64],
@@ -104,7 +104,7 @@ def running_average_non_uniform(
         DX: length of the running average along the x axis in units of x
         DY: length of the running average along the x axis in units of y
         FF: middle percentage of data to be considered
-        plot_conf: Optional plotting configuration; when provided, diagnostic heatmaps are generated
+        args: Optional parsed command line arguments; when provided, diagnostic heatmaps are generated
 
     Returns:
         x_ref, y_ref: regular x and y axis
@@ -194,13 +194,13 @@ def running_average_non_uniform(
                     data_std0[ii, jj] = np.nanstd(tmp_tmp)
                     data_N0[ii, jj] = len(tmp_tmp)
 
-    if plot_conf:
-        plot_heatmap(np.rot90(data_avg0), "data_avg0", conf=plot_conf)
+    if args is not None:
+        plot_heatmap(np.rot90(data_avg0), "data_avg0", args=args)
 
     # temporary x, with all the values filled in
     # x_tmp = x;
-    if plot_conf:
-        plot_heatmap(np.rot90(x), "x (time)", colorscale="Inferno", conf=plot_conf)
+    if args is not None:
+        plot_heatmap(np.rot90(x), "x (time)", colorscale="Inferno", args=args)
 
     x_tmp = x.copy()
 
@@ -211,8 +211,8 @@ def running_average_non_uniform(
         if len(i1) > 10:
             x_tmp[n, :] = interp1(i1.astype(np.float64), x[n, i1], np.arange(np.shape(x)[1], dtype=np.float64))
 
-    if plot_conf:
-        plot_heatmap(np.rot90(x_tmp), "x_tmp", colorscale="Inferno", conf=plot_conf)
+    if args is not None:
+        plot_heatmap(np.rot90(x_tmp), "x_tmp", colorscale="Inferno", args=args)
 
     x_tmp2 = np.empty((np.shape(x)[0], len(y_ref)))
     # print("shape x_tmp2", np.shape(x_tmp2))
@@ -228,8 +228,8 @@ def running_average_non_uniform(
             x_tmp2[n, 0 : ii1[0]] = x_tmp2[n, ii1[0]]
             x_tmp2[n, ii1[-1] : -1] = x_tmp2[n, ii1[-1]]
 
-    if plot_conf:
-        plot_heatmap(np.rot90(x_tmp2), "x_tmp2", colorscale="Inferno", conf=plot_conf)
+    if args is not None:
+        plot_heatmap(np.rot90(x_tmp2), "x_tmp2", colorscale="Inferno", args=args)
 
     # finally, re-interpolate onto the irregular time grid of itp_grid
 
@@ -250,8 +250,8 @@ def running_average_non_uniform(
             data_avg1[iii, m] = interp1(x_ref, data_avg0[:, m], x_tmp2[iii, m])
             data_std1[iii, m] = interp1(x_ref, data_std0[:, m], x_tmp2[iii, m])
 
-    if plot_conf:
-        plot_heatmap(np.rot90(data_avg1), "data_avg1", conf=plot_conf)
+    if args is not None:
+        plot_heatmap(np.rot90(data_avg1), "data_avg1", args=args)
 
     for n in range(np.shape(data_avg)[0]):
         jjj = np.nonzero(np.isfinite(y[n, :]))[0]

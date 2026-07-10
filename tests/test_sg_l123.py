@@ -60,6 +60,7 @@ import numpy as np
 import pytest
 
 import sg_l123
+import sg_l123_utils
 import utils
 from utils import AttributeDict
 
@@ -88,6 +89,42 @@ def test_downward(caplog: pytest.LogCaptureFixture, cmd_line: list[str]) -> None
         if record.levelname == "WARNING" and "Dives(s) [1, 2, 3, 4, 5, 6, 7, 8, 9] not present" in record.msg:
             continue
         assert record.levelname not in ["CRITICAL", "ERROR", "WARNING"]
+
+
+def test_downward_with_plots(monkeypatch: pytest.MonkeyPatch, tmp_path: pathlib.Path) -> None:
+    """Runs the full pipeline with --do_plots/--do_plots_detailed.
+
+    Covers every `if args.do_plots:`/`if args.do_plots_detailed:` block in main() plus
+    the diagnostic plots inside running_average_non_uniform (reached via
+    `args=args if args.do_plots_detailed else None`). `plot_heatmap` is mocked in both
+    sg_l123 and sg_l123_utils -- they're separate bound names from the same
+    `utils.plot_heatmap` import -- to avoid writing real html/webp files.
+    """
+    mock_plot_heatmap = Mock()
+    monkeypatch.setattr(sg_l123, "plot_heatmap", mock_plot_heatmap)
+    monkeypatch.setattr(sg_l123_utils, "plot_heatmap", mock_plot_heatmap)
+
+    result = sg_l123.main(
+        [
+            "--profile_dir",
+            simple_dir,
+            "--L123_dir",
+            str(tmp_path),
+            "--base_name",
+            "test",
+            "--mission_meta",
+            f"{simple_dir}/NANOOS_mission.yml",
+            "--do_plots",
+            "--do_plots_detailed",
+        ]
+    )
+
+    assert result == 0
+    assert mock_plot_heatmap.call_count > 0
+    for call in mock_plot_heatmap.call_args_list:
+        args_obj = call.args[2] if len(call.args) > 2 else call.kwargs.get("args")
+        assert args_obj is not None
+        assert args_obj.interactive is False
 
 
 # ---------------------------------------------------------------------------

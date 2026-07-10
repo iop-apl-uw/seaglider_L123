@@ -44,6 +44,7 @@ Notes on coverage:
     that branch that is actually reachable.
 """
 
+import argparse
 import pathlib
 import runpy
 import sys
@@ -104,7 +105,7 @@ def test_running_average_non_uniform_1d_x_returns_none() -> None:
 def test_running_average_non_uniform_tiles_1d_y_no_plots() -> None:
     """A 1-d y is tiled to match x (the `if len(np.shape(y)) == 1:` True arm).
 
-    plot_conf is left as None here, covering the False arm of every `if plot_conf:`
+    args is left as None here, covering the False arm of every `if args is not None:`
     check in the function.
     """
     n_cols = 30
@@ -118,7 +119,7 @@ def test_running_average_non_uniform_tiles_1d_y_no_plots() -> None:
     data[3, :] = np.nan
 
     data_avg, data_std, grid = sg_l123_utils.running_average_non_uniform(
-        x, y_1d, data, DX=5.0, DY=30.0, FF=0.9, plot_conf=None
+        x, y_1d, data, DX=5.0, DY=30.0, FF=0.9, args=None
     )
 
     assert data_avg is not None
@@ -141,8 +142,8 @@ def test_running_average_non_uniform_full_coverage(monkeypatch: pytest.MonkeyPat
         - `if len(jjj) > 2:` (final data_avg assembly) hits True (rows with fully finite y)
           and False (a row with almost entirely NaN y)
         - `if tmp_tmp.size != 0:` hits True (populated bins) and False (empty bins)
-        - every `if plot_conf:` check hits True, via a real PlotConf instance with
-          plot_heatmap mocked out to avoid writing real html/webp files
+        - every `if args is not None:` check hits True, via a real argparse.Namespace
+          with plot_heatmap mocked out to avoid writing real html/webp files
     """
     n_cols = 30
     dense_row = np.arange(n_cols, dtype=np.float64)
@@ -165,10 +166,10 @@ def test_running_average_non_uniform_full_coverage(monkeypatch: pytest.MonkeyPat
     monkeypatch.setattr(sg_l123_utils, "plot_heatmap", mock_plot_heatmap)
 
     data_avg, data_std, grid = sg_l123_utils.running_average_non_uniform(
-        x, y, data, DX=5.0, DY=30.0, FF=0.9, plot_conf=utils.PlotConf(True, True, False)
+        x, y, data, DX=5.0, DY=30.0, FF=0.9, args=argparse.Namespace(interactive=False)
     )
 
-    # 5 distinct diagnostic heatmaps are generated when plot_conf is truthy
+    # 5 distinct diagnostic heatmaps are generated when args is not None
     assert mock_plot_heatmap.call_count == 5
 
     assert data_avg is not None

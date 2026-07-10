@@ -61,7 +61,7 @@ from sg_l123_utils import (
     interp1,
     running_average_non_uniform,
 )
-from utils import AttributeDict, FullPathAction, PlotConf, init_logger, plot_heatmap
+from utils import AttributeDict, FullPathAction, init_logger, plot_heatmap
 
 
 class QualityFlags(enum.IntEnum):
@@ -421,6 +421,27 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
         action=argparse.BooleanOptionalAction,
     )
 
+    ap.add_argument(
+        "--do_plots",
+        default=False,
+        help="Generate diagnostic plots",
+        action=argparse.BooleanOptionalAction,
+    )
+
+    ap.add_argument(
+        "--do_plots_detailed",
+        default=False,
+        help="Generate detailed diagnostic plots",
+        action=argparse.BooleanOptionalAction,
+    )
+
+    ap.add_argument(
+        "--interactive",
+        default=False,
+        help="Open generated plots in a browser",
+        action=argparse.BooleanOptionalAction,
+    )
+
     args = ap.parse_args(cmdline_args)
 
     logger = init_logger(
@@ -464,10 +485,6 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
     l1_ncf_name = f"{args.base_name}_level1.nc"
     l2_ncf_name = f"{args.base_name}_level2.nc"
     l3_ncf_name = f"{args.base_name}_level3.nc"
-
-    # Debugging - generate plots, show interactively
-    # plot_conf = PlotConf(True, False, True)
-    plot_conf = PlotConf(False, False, False)
 
     master_depth = "ctd_depth"
     master_time = "ctd_time"
@@ -899,13 +916,13 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
                     if l2_var_np is not None:
                         l2_var_np[ii * 2 + 1, :] = num_pts
 
-    if plot_conf.do_plots:  # pragma: no cover
+    if args.do_plots:
         for var_n in L2_L3_vars:
             # plot_heatmap(np.rot90(getattr(sg_L1, var_n)), f"L1 {var_n}")
-            plot_heatmap(sg_L2[var_n], f"L2 {var_n}", plot_conf)
+            plot_heatmap(sg_L2[var_n], f"L2 {var_n}", args)
             num_pts = sg_L2.get(f"{var_n}_np", None)
             if num_pts is not None:
-                plot_heatmap(num_pts, f"L2 {var_n}_np", plot_conf)
+                plot_heatmap(num_pts, f"L2 {var_n}_np", args)
 
     logger.info("L3 Processing")
 
@@ -926,6 +943,7 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
             L2_L3_conf.despike_running_mean_dx * 3600.0 * 24.0,
             L2_L3_conf.despike_running_mean_dy,
             L2_L3_conf.data_range,
+            args=args if args.do_plots_detailed else None,
         )
 
         if ref is None or rms_ref is None:
@@ -937,9 +955,9 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
         ncf_L3_vars.append(f"{var_n}_ref")
         ncf_L3_vars.append(f"{var_n}_rms_ref")
 
-        if plot_conf.do_plots_detailed:  # pragma: no cover
-            plot_heatmap(ref, f"{var_n} _ref", plot_conf)
-            plot_heatmap(rms_ref, f"{var_n} rms ref", plot_conf)
+        if args.do_plots_detailed:
+            plot_heatmap(ref, f"{var_n} _ref", args)
+            plot_heatmap(rms_ref, f"{var_n} rms ref", args)
 
     # Apply the interpolation to the points from the L1 data that are
     # outside the despiker, or propagate values on if the variable isn't being
@@ -1035,11 +1053,11 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
 
             # setattr(sg_L3, var_n, L3_var)
 
-    if plot_conf.do_plots:  # pragma: no cover
+    if args.do_plots:
         for var_n in L2_L3_vars:
             var_met = L2_L3_var_meta[var_n]
             if var_met.despike:
-                plot_heatmap(sg_L3[var_n], f"L3_despiked_{var_n}", plot_conf)
+                plot_heatmap(sg_L3[var_n], f"L3_despiked_{var_n}", args)
 
     logger.info("L3 setting QC flags for depiked points")
     # flags:
@@ -1061,8 +1079,8 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
             flags[np.isfinite(L2_var) & np.isfinite(L3_var)] = QualityFlags.good
             sg_L3[f"{var_n}_flags"] = flags
             ncf_L3_vars.append(f"{var_n}_flags")
-            if plot_conf.do_plots_detailed:  # pragma: no cover
-                plot_heatmap(sg_L3[f"{var_n}_flags"], f"L3_{var_n}_flags", plot_conf)
+            if args.do_plots_detailed:
+                plot_heatmap(sg_L3[f"{var_n}_flags"], f"L3_{var_n}_flags", args)
         else:
             # if no despiking - all data considered good
             L3_var = sg_L3[var_n]
@@ -1092,8 +1110,8 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
             )
     sg_L3["time"] = L3_time
 
-    if plot_conf.do_plots:  # pragma: no cover
-        plot_heatmap(sg_L3.time, "L3 time", plot_conf)
+    if args.do_plots:
+        plot_heatmap(sg_L3.time, "L3 time", args)
 
     if np.std(np.diff(sg_L3.z)) == 0.0:
         # flag_regular_z = True
@@ -1117,15 +1135,15 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
 
         var_flags = sg_L3[f"{var_n}_flags"]
         tmp_flags = np.ones(np.shape(var_flags)) * (var_flags == QualityFlags.good)
-        if plot_conf.do_plots:  # pragma: no cover
-            plot_heatmap(tmp_flags, f"{var_n} tmp_flags", plot_conf)
+        if args.do_plots:
+            plot_heatmap(tmp_flags, f"{var_n} tmp_flags", args)
         # var_mask = np.empty(np.shape(tmp_flags))
 
         var_mask = signal.convolve(tmp_flags, gap_array, mode="same", method="direct")
         var_mask[var_mask > 0] = 1.0
         var_mask[var_mask <= 0.0] = np.nan
-        if plot_conf.do_plots:  # pragma: no cover
-            plot_heatmap(var_mask, f"{var_n} var_mask", plot_conf)
+        if args.do_plots:
+            plot_heatmap(var_mask, f"{var_n} var_mask", args)
 
         sg_L3[f"{var_n}_mask"] = var_mask
 
@@ -1151,12 +1169,12 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
             if len(jj) > 2:
                 var_interp[ii, :] = interp1(sg_L3.z[jj], var[ii, jj], sg_L3.z)
 
-        if plot_conf.do_plots:  # pragma: no cover
-            plot_heatmap(var_interp, f"{var_n} L3 interpolation before mask", plot_conf)
+        if args.do_plots:
+            plot_heatmap(var_interp, f"{var_n} L3 interpolation before mask", args)
 
         var_interp *= var_mask
-        if plot_conf.do_plots:  # pragma: no cover
-            plot_heatmap(var_interp, f"{var_n} L3 interpolation", plot_conf)
+        if args.do_plots:
+            plot_heatmap(var_interp, f"{var_n} L3 interpolation", args)
         sg_L3[f"{var_n}"] = var_interp
 
     # Derived values

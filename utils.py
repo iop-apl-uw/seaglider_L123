@@ -33,7 +33,6 @@ import logging
 import pathlib
 import time
 from collections.abc import Sequence
-from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
@@ -100,19 +99,10 @@ def init_logger(
 #
 
 
-@dataclass
-class PlotConf:
-    """Quick replacement for the conf processing."""
-
-    do_plots: bool  # Geenerate main plots
-    do_plots_detailed: bool  # Generate detailed plots
-    interactive: bool  # display the plot in the browser
-
-
 def plot_heatmap(
     data: npt.NDArray,
     title: str,
-    conf: PlotConf,
+    args: argparse.Namespace,
     colorscale: str | list[list[int | float | str]] = "Viridis",
     x: npt.NDArray | None = None,
     y: npt.NDArray | None = None,
@@ -130,7 +120,8 @@ def plot_heatmap(
     Args:
         data: 2-d array of values to plot
         title: plot title, also used to derive the output filename when output_name is None
-        conf: plotting configuration (whether to open the plot interactively)
+        args: parsed command line arguments; args.interactive controls whether the plot
+            is opened in a browser
         colorscale: plotly colorscale name, or an explicit colorscale list
         x: values for the x axis; defaults to array indices when None
         y: values for the y axis; defaults to array indices when None
@@ -226,7 +217,7 @@ def plot_heatmap(
         # include_plotlyjs="cdn",
         include_plotlyjs=True,
         full_html=True,
-        auto_open=conf.interactive,
+        auto_open=args.interactive,
         validate=True,
         config=std_config_dict,
     )

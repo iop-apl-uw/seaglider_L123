@@ -48,7 +48,7 @@ import plotly.graph_objects
 import xarray as xr
 from matplotlib.colors import Colormap
 
-from utils import FullPathAction, PlotConf, init_logger, plot_heatmap
+from utils import FullPathAction, init_logger, plot_heatmap
 
 DEBUG_PDB = False
 
@@ -84,8 +84,6 @@ plot_vars: dict[str, Colormap] = {
     "wlbb2fl_sig695nm_adjusted": cmocean.cm.algae,  # ty: ignore[unresolved-attribute]
     "aa3830_temp": cmocean.cm.thermal,  # ty: ignore[unresolved-attribute]
 }
-
-plot_conf: Final = PlotConf(True, False, False)
 
 # Set to True if you want to see the missing dives.  Sometimes, the heatmap will screw up in the
 # display if this is true
@@ -152,6 +150,13 @@ def main() -> None:
         "--debug_pdb",
         default=False,
         help="Enter the debugger for selected exceptions",
+        action=argparse.BooleanOptionalAction,
+    )
+
+    ap.add_argument(
+        "--interactive",
+        default=False,
+        help="Open generated plots in a browser",
         action=argparse.BooleanOptionalAction,
     )
 
@@ -244,7 +249,7 @@ def main() -> None:
             plot_heatmap(
                 var,
                 "<br>".join(textwrap.wrap(f"{level} {descr}", width=100)),
-                plot_conf,
+                args,
                 rot90=False,
                 layout=layout,
                 x=dive,
@@ -330,7 +335,7 @@ def main() -> None:
                 file=output_name,
                 include_plotlyjs="cdn",
                 full_html=True,
-                auto_open=plot_conf.interactive,
+                auto_open=args.interactive,
                 validate=True,
                 config=std_config_dict,
                 include_mathjax="cdn",

@@ -85,20 +85,6 @@ def test_init_logger_no_timestamp(tmp_path: pathlib.Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# PlotConf
-# ---------------------------------------------------------------------------
-
-
-def test_plot_conf_fields() -> None:
-    """Constructs a PlotConf and checks its fields are accessible by name."""
-    conf = utils.PlotConf(do_plots=True, do_plots_detailed=False, interactive=True)
-
-    assert conf.do_plots is True
-    assert conf.do_plots_detailed is False
-    assert conf.interactive is True
-
-
-# ---------------------------------------------------------------------------
 # plot_heatmap
 # ---------------------------------------------------------------------------
 
@@ -109,13 +95,13 @@ def test_plot_heatmap_contour_with_annotation_and_layout(tmp_path: pathlib.Path)
     Also covers the False arm of `if not output_name:` (an explicit output_name is supplied).
     """
     data = np.random.default_rng(0).normal(0, 1, (4, 5))
-    conf = utils.PlotConf(do_plots=True, do_plots_detailed=False, interactive=False)
+    args = argparse.Namespace(interactive=False)
     output_name = str(tmp_path.joinpath("contour.html"))
 
     utils.plot_heatmap(
         data,
         "contour title",
-        conf,
+        args,
         rot90=True,
         annotation="a note",
         layout={"xaxis": {"title": "x"}},
@@ -138,12 +124,12 @@ def test_plot_heatmap_default_output_name_and_webp(monkeypatch: pytest.MonkeyPat
     monkeypatch.setattr(plotly.graph_objects.Figure, "write_image", mock_write_image)
 
     data = np.random.default_rng(1).normal(0, 1, (4, 5))
-    conf = utils.PlotConf(do_plots=True, do_plots_detailed=False, interactive=False)
+    args = argparse.Namespace(interactive=False)
 
     utils.plot_heatmap(
         data,
         "heatmap title",
-        conf,
+        args,
         rot90=False,
         annotation=None,
         layout=None,
