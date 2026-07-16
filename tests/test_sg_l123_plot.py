@@ -197,6 +197,30 @@ def test_main_default_verbosity(monkeypatch: pytest.MonkeyPatch, tmp_path: pathl
     sg_l123_plot.main()
 
 
+def test_main_custom_plots_dir(monkeypatch: pytest.MonkeyPatch, tmp_path: pathlib.Path) -> None:
+    """Covers `--plots_dir`: plots are written under the custom directory name, not "plots"."""
+    _write_l2_l3_files(tmp_path)
+    monkeypatch.setattr(sg_l123_plot, "plot_heatmap", Mock())
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "sg_l123_plot.py",
+            "--L123_dir",
+            str(tmp_path),
+            "--base_name",
+            "test",
+            "--plots_dir",
+            "custom_plots",
+        ],
+    )
+
+    sg_l123_plot.main()
+
+    assert tmp_path.joinpath("custom_plots", "test_level2.nc_positions.html").exists()
+    assert not tmp_path.joinpath("plots").exists()
+
+
 # ---------------------------------------------------------------------------
 # `if __name__ == "__main__":` guard, including all three except clauses
 # ---------------------------------------------------------------------------

@@ -147,6 +147,13 @@ def main() -> None:
     )
 
     ap.add_argument(
+        "--plots_dir",
+        help="Name of the directory (relative to each netCDF file's location) where plots are written",
+        default="plots",
+        type=str,
+    )
+
+    ap.add_argument(
         "--debug_pdb",
         default=False,
         help="Enter the debugger for selected exceptions",
@@ -197,7 +204,7 @@ def main() -> None:
             "L3",
         ),
     ):
-        plot_dir = nc_file.parent.joinpath("plots")
+        plot_dir = nc_file.parent.joinpath(args.plots_dir)
         if not plot_dir.exists():
             plot_dir.mkdir()
         dsi = xr.open_dataset(nc_file)
