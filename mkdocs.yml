@@ -1,15 +1,65 @@
 site_name: Seaglider Level 123 Processing
+
+exclude_docs: |
+  dev/
+
 theme:
-  name: "material"
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - content.code.copy
 
 plugins:
-  - mkdocstrings
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+            show_root_heading: true
+            docstring_style: google
+            merge_init_into_class: true
+            show_signature_annotations: true
 
 markdown_extensions:
   - markdown_include.include:
       base_path: docs
-      
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - tables
+  - toc:
+      permalink: true
+
 nav:
-  - index.md
-  - reference.md
-  
+  - Home: index.md
+  - User Guide:
+      - Overview: user-guide/index.md
+      - Installation: user-guide/installation.md
+      - Configuration: user-guide/configuration.md
+      - Running L2/L3 Processing: user-guide/running-processing.md
+      - Plotting: user-guide/running-plots.md
+  - Reference:
+      - Overview: reference/index.md
+      - Entry Points: reference/entry-points.md
+      - Internals & Utilities: reference/internals.md
+  - Development:
+      - Overview: development/index.md
+      - Testing & Coverage: development/testing.md
+      - Code Style & Standards: development/code-style.md
+      - Building the Docs: development/building-docs.md
+      - Contributing: development/contributing.md

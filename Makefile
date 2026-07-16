@@ -27,3 +27,9 @@ act:
 
 doc:
 	-uv run mkdocs build
+
+docs-serve:
+	-uv run mkdocs serve
+
+docs-clean:
+	-rm -rf site/
