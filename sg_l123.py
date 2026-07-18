@@ -217,13 +217,20 @@ def inventory_vars(
         dive_vars: list of dive variables to be propagated to the final product
         platform_specific_attribs: dictionary of platform specific attributes
     """
-    dive_vars = []
-    profile_vars = []
-    l1_profile_vars = []
+    dive_vars: list[str] = []
+    profile_vars: list[str] = []
+    l1_profile_vars: list[str] = []
     platform_specific_attribs: dict[str, str | int | float] = {}
 
-    # For now, just consider the first netcdf file that is not marked as haveing a processing error
-    # We could do a complete search
+    seen_dive_vars: set[str] = set()
+    seen_profile_vars: set[str] = set()
+    seen_l1_profile_vars: set[str] = set()
+
+    # Scan every non-error dive and union the variables found, rather than stopping at
+    # the first one - a single dive that's missing a variable without being flagged
+    # processing_error (e.g. a degenerate dive with no CTD samples) must not drop that
+    # variable mission-wide and break downstream code that assumes it's always present
+    # (e.g. ctd_time).
     for dive_ncf in dive_ncfs:
         ncf = open_netcdf_file(dive_ncf, logger=logger)
 
@@ -247,16 +254,23 @@ def inventory_vars(
             if vv in ncf.variables:
                 # if "nc_dimensions" in var_dict[vv]:
                 if var_dict[vv].nc_dimensions is not None:
-                    if len(var_dict[vv].nc_dimensions) == 1:
-                        dive_vars.append(vv)
-                    else:
-                        if "include_in_L23" not in var_dict[vv] or var_dict[vv]["include_in_L23"]:
-                            profile_vars.append(vv)
+                    # Not merged into one `if`: the dedup check must not affect which
+                    # branch (dive_vars vs. profile_vars) an already-seen var falls into.
+                    if len(var_dict[vv].nc_dimensions) == 1:  # noqa: SIM102
+                        if vv not in seen_dive_vars:
+                            seen_dive_vars.add(vv)
+                            dive_vars.append(vv)
+                    elif (
+                        "include_in_L23" not in var_dict[vv] or var_dict[vv]["include_in_L23"]
+                    ) and vv not in seen_profile_vars:
+                        seen_profile_vars.add(vv)
+                        profile_vars.append(vv)
 
-                if var_dict[vv].nc_L1_dimensions:
+                if var_dict[vv].nc_L1_dimensions and vv not in seen_l1_profile_vars:
+                    seen_l1_profile_vars.add(vv)
                     l1_profile_vars.append(vv)
 
-        if not platform_specific_attribs:  # pragma: no branch
+        if not platform_specific_attribs:
             for attrib in platform_specific_attribs_list:
                 # if attrib in ncf._attributes:
                 # if isinstance(ncf._attributes[attrib], bytes):
@@ -270,7 +284,7 @@ def inventory_vars(
                     else:
                         platform_specific_attribs[attrib] = getattr(ncf, attrib)
 
-        break
+        ncf.close()
 
     return (dive_vars, profile_vars, l1_profile_vars, platform_specific_attribs)
 

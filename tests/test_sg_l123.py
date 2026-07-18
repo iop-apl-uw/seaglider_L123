@@ -347,6 +347,44 @@ def test_inventory_vars_processing_error_skip(monkeypatch: pytest.MonkeyPatch) -
     assert platform_attribs == {"platform_id": "SG1"}
 
 
+def test_inventory_vars_unions_across_dives(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Covers unioning variables across dives instead of stopping at the first one.
+
+    A var missing from the first non-error dive but present in a later one must
+    still end up in the result - regression test for the ctd_time bug, where a
+    degenerate first dive (missing ctd_time, but not flagged processing_error)
+    silently dropped ctd_time mission-wide because only the first dive was inventoried.
+    """
+    var_dict = {
+        "var_a": AttributeDict({"nc_dimensions": ["dim1"], "nc_L1_dimensions": None}),
+        "ctd_time": AttributeDict({"nc_dimensions": ["dim1", "dim2"], "nc_L1_dimensions": None}),
+    }
+    # First dive: has var_a but not ctd_time (not flagged processing_error).
+    ncf_first = _FakeNcf({"var_a": np.array([1.0])}, attrs={"platform_id": "SG1"})
+    # Second dive: has both.
+    ncf_second = _FakeNcf({"var_a": np.array([1.0]), "ctd_time": np.array([1.0])})
+
+    calls = {"n": 0}
+
+    def fake_open(path: pathlib.Path, logger: logging.Logger | None = None) -> _FakeNcf:
+        calls["n"] += 1
+        return ncf_first if calls["n"] == 1 else ncf_second
+
+    monkeypatch.setattr(sg_l123, "open_netcdf_file", fake_open)
+
+    dive_vars, profile_vars, _l1_vars, platform_attribs = sg_l123.inventory_vars(
+        [pathlib.Path("p0010001.nc"), pathlib.Path("p0010002.nc")],
+        var_dict,
+        ("platform_id",),
+        logging.getLogger("t"),
+    )
+
+    assert dive_vars == ["var_a"]
+    assert profile_vars == ["ctd_time"]
+    # platform_attribs still comes from the first dive only, not overwritten by later ones.
+    assert platform_attribs == {"platform_id": "SG1"}
+
+
 def test_inventory_vars_ncdf_suffix(monkeypatch: pytest.MonkeyPatch) -> None:
     """Covers `if dive_ncf.suffix == ".ncdf": remap_ncfd_vars(...)`."""
     var_dict = {"var_a": AttributeDict({"nc_dimensions": ["dim1"], "nc_L1_dimensions": None})}
