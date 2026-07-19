@@ -147,6 +147,19 @@ def test_fix_attr_type_flag_values_and_default() -> None:
     assert result["units"] == "m"
 
 
+def test_fix_attr_type_bool_fill_value_not_coerced() -> None:
+    """Covers that a bool `_FillValue` sentinel is not coerced by the int branch.
+
+    `_FillValue: False` (meaning "no fill value") must pass through as `False`, not be
+    coerced to `data_type(0)` - bool is a subclass of int, and an actual
+    `_FillValue == 0` collides with legitimate zero-valued data (e.g. z == 0 at the
+    surface).
+    """
+    result = sg_l123.fix_attr_type(np.int32, {"_FillValue": False})
+
+    assert result["_FillValue"] is False
+
+
 # ---------------------------------------------------------------------------
 # average_position
 # ---------------------------------------------------------------------------

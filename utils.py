@@ -110,7 +110,7 @@ def plot_heatmap(
     annotation: str | None = None,
     layout: dict | None = None,
     hovertemplate: str | None = None,
-    output_name: str | None = None,
+    output_name: str | pathlib.Path | None = None,
     trim_zrange: float = 1.0,
     f_contour: bool = False,
     f_webp: bool = False,
@@ -129,7 +129,8 @@ def plot_heatmap(
         annotation: Optional text annotation to add below the plot
         layout: Optional dict of plotly layout overrides
         hovertemplate: Optional plotly hover template string
-        output_name: Output html file path; defaults to a sanitized version of title
+        output_name: Output html file path; defaults to a sanitized version of title.
+            The webp path (when f_webp is True) is derived by replacing the suffix.
         trim_zrange: fraction of the z data range to display, trimming outliers symmetrically
         f_contour: True to plot a contour plot instead of a heatmap
         f_webp: True to additionally write a webp image of the plot
@@ -209,8 +210,7 @@ def plot_heatmap(
     if layout:
         fig.update_layout(layout)
 
-    if not output_name:
-        output_name = f"{utils.ensure_basename(title)}.html"
+    output_name = pathlib.Path(output_name) if output_name else pathlib.Path(f"{utils.ensure_basename(title)}.html")
 
     fig.write_html(
         file=output_name,
@@ -228,7 +228,7 @@ def plot_heatmap(
         std_scale = 1.0
 
         fig.write_image(
-            output_name.replace(".html", ".webp"),
+            output_name.with_suffix(".webp"),
             format="webp",
             width=std_width,
             height=std_height,

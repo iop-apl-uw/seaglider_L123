@@ -105,7 +105,10 @@ def fix_attr_type(data_type: type, attrs: dict[str, Any]) -> dict[str, Any]:
     """
     new_attrs = {}
     for k, v in attrs.items():
-        if isinstance(v, int):
+        # bool is a subclass of int, but attrs like "_FillValue": False (meaning "no fill
+        # value") must pass through unchanged rather than being coerced to data_type(0),
+        # which would collide with legitimate zero-valued data (e.g. z == 0 at the surface).
+        if isinstance(v, int) and not isinstance(v, bool):
             new_attrs[k] = data_type(v)
         elif k == "flag_values":
             new_attrs[k] = [data_type(li) for li in v]

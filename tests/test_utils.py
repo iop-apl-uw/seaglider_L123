@@ -34,10 +34,9 @@ Notes on coverage:
     are plain `if`/`if-else` statements (FullPathAction.__call__ has an
     `if`/`elif`/`else` chain), each exercised for every arm below.
 
-    plot_heatmap's `f_webp=True` path calls `Figure.write_image(..., engine="kaleido")`,
-    but the `kaleido` package is not a project dependency and is not installed in
-    this environment, so `Figure.write_image` is patched out for that test rather
-    than exercised for real.
+    plot_heatmap's `f_webp=True` path calls `Figure.write_image(..., engine="kaleido")`;
+    `Figure.write_image` is patched out for that test to keep it fast and avoid an
+    actual image render, rather than exercised for real.
 """
 
 import argparse
@@ -116,8 +115,8 @@ def test_plot_heatmap_default_output_name_and_webp(monkeypatch: pytest.MonkeyPat
     """Covers the False arms of `if rot90:`, `if f_contour:`, `if annotation:`, `if layout:`.
 
     Also covers the True arm of `if not output_name:` (the default name is derived from the
-    title) and the True arm of `if f_webp:`. `Figure.write_image` is mocked since kaleido
-    isn't installed.
+    title) and the True arm of `if f_webp:`. `Figure.write_image` is mocked to keep the test
+    fast and deterministic.
     """
     monkeypatch.chdir(tmp_path)
     mock_write_image = Mock()
@@ -139,7 +138,7 @@ def test_plot_heatmap_default_output_name_and_webp(monkeypatch: pytest.MonkeyPat
 
     assert tmp_path.joinpath("heatmap_title.html").exists()
     mock_write_image.assert_called_once()
-    assert mock_write_image.call_args.args[0] == "heatmap_title.webp"
+    assert mock_write_image.call_args.args[0] == pathlib.Path("heatmap_title.webp")
 
 
 # ---------------------------------------------------------------------------
