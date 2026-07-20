@@ -292,6 +292,62 @@ def inventory_vars(
     return (dive_vars, profile_vars, l1_profile_vars, platform_specific_attribs)
 
 
+def compute_grid_max_depth(
+    dive_ncfs: list[pathlib.Path],
+    master_depth_n: str,
+    truck_depth_n: str,
+    floor_depth: float,
+    logger: logging.Logger,
+) -> float:
+    """Determines the max depth to size the L2/L3 depth-bin grid for a mission.
+
+    Most Seagliders never exceed ~1000m; the historical fixed 1000m grid was sized
+    for that case and silently lumped anything deeper into the terminal bin (see
+    bindata()'s edge behavior). Deepgliders (03x-series and similar) can exceed that
+    by a large margin, so the grid must be sized per-mission from the actual data
+    rather than assumed.
+
+    Args:
+        dive_ncfs: sorted list of per-dive netcdf file names
+        master_depth_n: name of the primary depth variable (usually ctd_depth)
+        truck_depth_n: name of the fallback depth variable (usually depth), used for
+            dives where master_depth_n isn't present
+        floor_depth: minimum grid depth to return, regardless of observed data -
+            keeps grid size (and therefore output) unchanged for typical missions
+        logger: logging object for error logging
+
+    Returns:
+        The larger of floor_depth and the deepest finite depth value observed across
+        all non-error dives.
+    """
+    observed_max_depth = 0.0
+    for dive_ncf in dive_ncfs:
+        ncf = open_netcdf_file(dive_ncf, logger=logger)
+        if ncf is None:
+            continue
+
+        if "processing_error" in ncf.variables:
+            ncf.close()
+            continue
+
+        depth_var_n = master_depth_n if master_depth_n in ncf.variables else truck_depth_n
+        if depth_var_n in ncf.variables:
+            depth = ncf.variables[depth_var_n][:].astype(np.float64)
+            depth = depth[np.isfinite(depth)]
+            if depth.size:
+                observed_max_depth = max(observed_max_depth, float(np.max(depth)))
+
+        ncf.close()
+
+    if observed_max_depth > floor_depth:
+        logger.info(
+            f"Observed max depth {observed_max_depth:.1f}m exceeds the {floor_depth:.1f}m grid floor - "
+            "growing the L2/L3 depth-bin grid to fit"
+        )
+
+    return max(floor_depth, observed_max_depth)
+
+
 # def load_L1_data(
 #     l1_ncf_name,
 #     l1_dive_map,
@@ -560,12 +616,19 @@ def main(cmdline_args: list[str] = sys.argv[1:]) -> int:
     ]
 
     # Setup L2 and L3 data
-    bin_centers = np.arange(0.0, 1000.1, 1.0)
+    #
+    # Grid depth floor of 1020m matches normal Seaglider operating depth (~1000m) with
+    # a small margin, so typical missions get an unchanged grid/output. Deepgliders
+    # (03x-series and similar, capable of >1000m) get a grid sized to their actual max
+    # depth instead of having deep data collapsed into a single terminal bin.
+    grid_depth_floor = 1020.0
+    grid_max_depth = compute_grid_max_depth(dive_ncfs, master_depth, truck_depth, grid_depth_floor, logger)
+    bin_centers = np.arange(0.0, grid_max_depth + 0.1, 1.0)
     # This is actually bin edges, so one more point then actual bins
-    bin_edges = np.arange(-0.5, 1000.51, 1.0)
+    bin_edges = np.arange(-0.5, grid_max_depth + 0.51, 1.0)
     # Do this to ensure everything is caught in the binned statistic
     bin_edges[0] = -20.0
-    bin_edges[-1] = 1050.0
+    bin_edges[-1] = grid_max_depth + 50.0
 
     sg_L1 = Seaglider_L1_L2_L3()
     sg_L1.dive_num = None

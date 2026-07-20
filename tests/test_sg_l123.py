@@ -451,6 +451,86 @@ def test_inventory_vars_ncdf_remap_failure_skips_file(
 
 
 # ---------------------------------------------------------------------------
+# compute_grid_max_depth
+# ---------------------------------------------------------------------------
+
+
+def test_compute_grid_max_depth_returns_floor_when_shallow(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Covers the common case: observed depth stays under floor_depth, so it wins."""
+    ncf = _FakeNcf({"ctd_depth": np.array([0.0, 500.0, 999.0, 100.0])})
+    monkeypatch.setattr(sg_l123, "open_netcdf_file", lambda path, logger=None: ncf)
+
+    result = sg_l123.compute_grid_max_depth(
+        [pathlib.Path("p0330001.nc")], "ctd_depth", "depth", 1020.0, logging.getLogger("t")
+    )
+
+    assert result == 1020.0
+
+
+def test_compute_grid_max_depth_grows_for_deep_dive(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Covers a deepglider dive exceeding floor_depth - grid grows to fit it."""
+    ncf = _FakeNcf({"ctd_depth": np.array([0.0, 2542.39, 1200.0])})
+    monkeypatch.setattr(sg_l123, "open_netcdf_file", lambda path, logger=None: ncf)
+
+    with caplog.at_level(logging.INFO):
+        result = sg_l123.compute_grid_max_depth(
+            [pathlib.Path("p0330019.nc")], "ctd_depth", "depth", 1020.0, logging.getLogger("t")
+        )
+
+    assert result == 2542.39
+    assert any("Observed max depth" in r.message for r in caplog.records)
+
+
+def test_compute_grid_max_depth_falls_back_to_truck_depth(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Covers dives missing master_depth_n - truck_depth_n is used instead."""
+    ncf = _FakeNcf({"depth": np.array([0.0, 1500.0])})
+    monkeypatch.setattr(sg_l123, "open_netcdf_file", lambda path, logger=None: ncf)
+
+    result = sg_l123.compute_grid_max_depth(
+        [pathlib.Path("p0330001.nc")], "ctd_depth", "depth", 1020.0, logging.getLogger("t")
+    )
+
+    assert result == 1500.0
+
+
+def test_compute_grid_max_depth_skips_processing_error_dive(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A dive flagged processing_error must not inflate the grid, even if deep."""
+    ncf = _FakeNcf({"ctd_depth": np.array([9999.0]), "processing_error": np.array([1])})
+    monkeypatch.setattr(sg_l123, "open_netcdf_file", lambda path, logger=None: ncf)
+
+    result = sg_l123.compute_grid_max_depth(
+        [pathlib.Path("p0330001.nc")], "ctd_depth", "depth", 1020.0, logging.getLogger("t")
+    )
+
+    assert result == 1020.0
+
+
+def test_compute_grid_max_depth_skips_unopenable_file(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Covers `if ncf is None: continue`."""
+    monkeypatch.setattr(sg_l123, "open_netcdf_file", lambda path, logger=None: None)
+
+    result = sg_l123.compute_grid_max_depth(
+        [pathlib.Path("p0330001.nc")], "ctd_depth", "depth", 1020.0, logging.getLogger("t")
+    )
+
+    assert result == 1020.0
+
+
+def test_compute_grid_max_depth_ignores_non_finite_values(monkeypatch: pytest.MonkeyPatch) -> None:
+    """NaN/inf samples must not propagate into the max depth calculation."""
+    ncf = _FakeNcf({"ctd_depth": np.array([np.nan, np.inf, 500.0])})
+    monkeypatch.setattr(sg_l123, "open_netcdf_file", lambda path, logger=None: ncf)
+
+    result = sg_l123.compute_grid_max_depth(
+        [pathlib.Path("p0330001.nc")], "ctd_depth", "depth", 1020.0, logging.getLogger("t")
+    )
+
+    assert result == 1020.0
+
+
+# ---------------------------------------------------------------------------
 # main -- config/argument error paths
 # ---------------------------------------------------------------------------
 
@@ -741,6 +821,64 @@ def test_main_no_gps_variables(tmp_path: pathlib.Path, monkeypatch: pytest.Monke
     )
 
     assert result == 0
+
+
+def test_main_grid_grows_for_deep_dive(tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """End-to-end: a dive exceeding the 1020m grid floor grows the L2/L3 z grid to fit.
+
+    Simulates a deepglider (03x-series) dive by scaling one real testdata/simple dive's
+    depth data 3x (real max ~984m -> ~2953m), rather than the whole mission staying
+    under the floor as it normally does.
+    """
+    deep_dive = pathlib.Path(simple_dir).joinpath("p2490015.nc").resolve()
+    scale = 3.0
+
+    class _DeepNcf:
+        def __init__(self, real: netCDF4.Dataset) -> None:
+            self._real = real
+            self.variables = dict(real.variables)
+            for depth_var in ("ctd_depth", "depth"):
+                if depth_var in self.variables:
+                    self.variables[depth_var] = np.asarray(self.variables[depth_var][:], dtype=np.float64) * scale
+
+        def close(self) -> None:
+            self._real.close()
+
+        def __getattr__(self, name: str) -> object:
+            return getattr(self._real, name)
+
+    real_open = sg_l123.open_netcdf_file
+
+    def fake_open(path: pathlib.Path, logger: logging.Logger | None = None) -> netCDF4.Dataset | _DeepNcf | None:
+        real = real_open(path, logger=logger)
+        if real is None:
+            return None
+        return _DeepNcf(real) if pathlib.Path(path).resolve() == deep_dive else real
+
+    monkeypatch.setattr(sg_l123, "open_netcdf_file", fake_open)
+
+    result = sg_l123.main(
+        [
+            "--profile_dir",
+            simple_dir,
+            "--L123_dir",
+            str(tmp_path),
+            "--base_name",
+            "test",
+            "--mission_meta",
+            f"{simple_dir}/NANOOS_mission.yml",
+        ]
+    )
+
+    assert result == 0
+
+    l3_ds = netCDF4.Dataset(tmp_path.joinpath("test_level3.nc"))
+    try:
+        z = l3_ds.variables["z"][:]
+        assert z.max() > 1020.0
+        assert z.max() >= 2900.0
+    finally:
+        l3_ds.close()
 
 
 # ---------------------------------------------------------------------------
